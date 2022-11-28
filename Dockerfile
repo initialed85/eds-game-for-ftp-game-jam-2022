@@ -7,8 +7,9 @@ WORKDIR /srv/
 
 FROM base AS builder
 
-COPY Cargo.toml /srv/src/Cargo.toml
-COPY Cargo.lock /srv/src/Cargo.lock
+COPY Cargo.toml /srv/Cargo.toml
+COPY Cargo.lock /srv/Cargo.lock
+RUN mkdir -p /srv/src/ && touch /srv/src/main.rs
 RUN cargo update
 
 COPY src /srv/src
