@@ -23,9 +23,11 @@ I basically the [getting started page](https://bevyengine.org/learn/book/getting
 
 ## Build and run
 
-### One-time for all cases
+### One-time
 
 ```shell
+rustup target add wasm32-unknown-unknown
+cargo install wasm-server-runner
 cargo update
 ```
 
@@ -86,9 +88,3 @@ cargo build --target wasm32-unknown-unknown && WASM_SERVER_RUNNER_ADDRESS=0.0.0.
 #### Open the game
 
 Navigate to [https://127.0.0.1:1334](https://127.0.0.1:1334)
-
-**WASM**
-
-```shell
-cargo build --target wasm32-unknown-unknown && WASM_SERVER_RUNNER_ADDRESS=0.0.0.0 wasm-server-runner target/wasm32-unknown-unknown/debug/eds-game-for-ftp-game-jam-2022.wasm
-```
