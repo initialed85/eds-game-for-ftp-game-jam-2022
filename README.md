@@ -21,6 +21,20 @@ I basically the [getting started page](https://bevyengine.org/learn/book/getting
 - [Rust](https://www.rust-lang.org/)
 - [zld](https://github.com/michaeleisel/zld)
 
+## Quick start
+
+If you've got Docker installed you can (reasonably) quickly build and run the game in WASM mode with the following commands:
+
+```shell
+# build
+docker build -t eds-game-for-ftp-game-jam-2022 -f ./Dockerfile .
+
+# run server
+docker run --rm -p 1334:1334 eds-game-for-ftp-game-jam-2022
+```
+
+Then open the game by navigating to [https://127.0.0.1:1334](https://127.0.0.1:1334).
+
 ## Build and run
 
 ### One-time
