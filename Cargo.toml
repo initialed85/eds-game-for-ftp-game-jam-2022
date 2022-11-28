@@ -1,0 +1,57 @@
+[package]
+name = "eds-game-for-ftp-game-jam-2022"
+version = "0.1.0"
+edition = "2021"
+
+# Native
+[dependencies]
+bevy = { version = "0.9.0", features = ["dynamic"] }
+rapier2d = { version = "0.16.1", features = ["simd-stable"] }
+bevy_rapier2d = "0.19.0"
+
+# WASM
+#[dependencies]
+#bevy = "0.9.0"
+#rapier2d = "0.16.1"
+#bevy_rapier2d = "0.19.0"
+#wasm-bindgen = "0.2"
+
+[dependencies.web-sys]
+version = "0.3.60"
+features = [
+    "Comment",
+    "Document",
+    "Element",
+    "EventTarget",
+    "HtmlCollection",
+    "Node",
+    "NodeList",
+    "Text",
+    "Window",
+]
+
+# TODO: not recommended for release
+[profile.dev]
+opt-level = 1
+debug = 1
+
+# TODO: not recommended for release
+[profile.dev.package."*"]
+opt-level = 3
+
+[target.x86_64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-Clink-arg=-fuse-ld=lld"]
+
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y"]
+
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-arg=-fuse-ld=/opt/homebrew/bin/zld", "-Zshare-generics=y"]
+
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld.exe"
+rustflags = ["-Zshare-generics=n"]
+
+[target.wasm32-unknown-unknown]
+runner = "wasm-server-runner"
