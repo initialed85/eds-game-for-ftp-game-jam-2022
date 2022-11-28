@@ -5,7 +5,7 @@ What is it? Not sure yet- looks like it's gonna be a bit like Asteroids.
 ## Context
 
 - [FTP](https://www.ftpsolutions.com.au/) is the place I work
-- [One of the team members](https://github.com/shane-smt) suggested a game jam
+- [One of the team members](https://github.com/shane-smt) suggested [a game jam](https://itch.io/jam/ftp-gamejam)
 - I've been dying for an excuse to learn Rust
 
 ## Approach
