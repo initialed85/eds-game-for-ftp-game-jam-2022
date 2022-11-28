@@ -38,7 +38,8 @@ fn main() {
         .add_startup_system(setup::setup)
         .add_startup_system(spawn_player_1)
         .add_startup_system(spawn_player_2)
-        .add_system(handle_particle_map_rollover)
+        // TODO: not sure if I like the effect
+        // .add_system(handle_particle_map_rollover)
         .add_system(handle_particle)
         .add_system(handle_collision)
         .add_system(handle_player_map_rollover)
