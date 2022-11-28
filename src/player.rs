@@ -7,14 +7,14 @@ use bevy::sprite::MaterialMesh2dBundle;
 use bevy::utils::Uuid;
 use bevy_rapier2d::dynamics::RigidBody::Dynamic;
 use bevy_rapier2d::geometry::{ActiveEvents, Collider};
-use bevy_rapier2d::prelude::{Ccd, ColliderMassProperties, Damping, ExternalImpulse, Friction, Restitution, Sleeping, Velocity};
+use bevy_rapier2d::prelude::{Ccd, ColliderMassProperties, Damping, Friction, Restitution, Sleeping, Velocity};
 
 use crate::constants::{
-    BOUNDS, PLAYER_1_BACKWARD_KEY, PLAYER_1_COLOR, PLAYER_1_FIRE_KEY, PLAYER_1_FORWARD_KEY, PLAYER_1_LEFT_KEY, PLAYER_1_NAME,
-    PLAYER_1_RIGHT_KEY, PLAYER_1_STARTING_ROTATION_MULTIPLIER, PLAYER_1_STARTING_TRANSLATION_MULTIPLIER, PLAYER_2_BACKWARD_KEY,
-    PLAYER_2_COLOR, PLAYER_2_FIRE_KEY, PLAYER_2_FORWARD_KEY, PLAYER_2_LEFT_KEY, PLAYER_2_NAME, PLAYER_2_RIGHT_KEY,
+    BOUNDS, FRICTION_COEFFICIENT, MATERIAL_SCALE, PLAYER_1_BACKWARD_KEY, PLAYER_1_COLOR, PLAYER_1_FIRE_KEY, PLAYER_1_FORWARD_KEY,
+    PLAYER_1_LEFT_KEY, PLAYER_1_NAME, PLAYER_1_RIGHT_KEY, PLAYER_1_STARTING_ROTATION_MULTIPLIER, PLAYER_1_STARTING_TRANSLATION_MULTIPLIER,
+    PLAYER_2_BACKWARD_KEY, PLAYER_2_COLOR, PLAYER_2_FIRE_KEY, PLAYER_2_FORWARD_KEY, PLAYER_2_LEFT_KEY, PLAYER_2_NAME, PLAYER_2_RIGHT_KEY,
     PLAYER_2_STARTING_ROTATION_MULTIPLIER, PLAYER_2_STARTING_TRANSLATION_MULTIPLIER, PLAYER_ANGULAR_DAMPING, PLAYER_DENSITY,
-    PLAYER_FRICTION_COEFFICIENT, PLAYER_LINEAR_DAMPING, PLAYER_MATERIAL_SCALE, PLAYER_RESTITUTION_COEFFICIENT,
+    PLAYER_LINEAR_DAMPING, RESTITUTION_COEFFICIENT,
 };
 use crate::weapon::{get_weapon, Weapon};
 
@@ -49,7 +49,7 @@ pub fn get_player_and_weapon(
         left_key,
         right_key,
         fire_key,
-        size: Vec3::new(1.0, 1.5, 0.0) * PLAYER_MATERIAL_SCALE / 2.0, // TODO
+        size: Vec3::new(1.0, 1.5, 0.0) * MATERIAL_SCALE / 2.0, // TODO
         weapon_uuid: weapon.uuid,
     };
 
@@ -59,12 +59,11 @@ pub fn get_player_and_weapon(
 fn get_player_material_mesh(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
-    scale_multiplier: f32,
     translation_multiplier: f32,
     rotation_multiplier: f32,
     color: Color,
 ) -> MaterialMesh2dBundle<ColorMaterial> {
-    let mut scale = Vec3::splat(scale_multiplier);
+    let mut scale = Vec3::splat(MATERIAL_SCALE);
     scale.y *= 1.25;
 
     let transform = Transform::default()
@@ -91,11 +90,10 @@ pub fn spawn_player(player: Player, player_material_mesh: MaterialMesh2dBundle<C
         .insert(Sleeping::disabled())
         .insert(Ccd::enabled())
         .insert(Collider::ball(0.5))
-        .insert(Friction::coefficient(PLAYER_FRICTION_COEFFICIENT))
-        .insert(Restitution::coefficient(PLAYER_RESTITUTION_COEFFICIENT))
+        .insert(Friction::coefficient(FRICTION_COEFFICIENT))
+        .insert(Restitution::coefficient(RESTITUTION_COEFFICIENT))
         .insert(ColliderMassProperties::Density(PLAYER_DENSITY))
         .insert(Velocity::zero())
-        .insert(ExternalImpulse::default())
         .insert(Damping {
             linear_damping: PLAYER_LINEAR_DAMPING,
             angular_damping: PLAYER_ANGULAR_DAMPING,
@@ -118,7 +116,6 @@ pub fn spawn_player_1(mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<As
         get_player_material_mesh(
             meshes.borrow_mut(),
             materials.borrow_mut(),
-            PLAYER_MATERIAL_SCALE,
             PLAYER_1_STARTING_TRANSLATION_MULTIPLIER,
             PLAYER_1_STARTING_ROTATION_MULTIPLIER,
             PLAYER_1_COLOR,
@@ -143,7 +140,6 @@ pub fn spawn_player_2(mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<As
         get_player_material_mesh(
             meshes.borrow_mut(),
             materials.borrow_mut(),
-            PLAYER_MATERIAL_SCALE,
             PLAYER_2_STARTING_TRANSLATION_MULTIPLIER,
             PLAYER_2_STARTING_ROTATION_MULTIPLIER,
             PLAYER_2_COLOR,

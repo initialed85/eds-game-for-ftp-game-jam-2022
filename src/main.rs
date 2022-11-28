@@ -7,17 +7,20 @@ use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsP
 
 use crate::collision_system::handle_collision;
 use crate::constants::TIME_STEP;
-use crate::map_rollover_system::{handle_player_map_rollover, handle_projectile_map_rollover};
+use crate::map_rollover_system::{handle_particle_map_rollover, handle_player_map_rollover, handle_projectile_map_rollover};
+use crate::particle_system::handle_particle;
 use crate::player::{spawn_player_1, spawn_player_2};
-use crate::player_movement_system::handle_player_movement;
+use crate::player_system::handle_player;
 use crate::projectile_system::handle_projectile;
 use crate::weapon_system::handle_player_weapon;
 
 mod collision_system;
 mod constants;
 mod map_rollover_system;
+mod particle;
+mod particle_system;
 mod player;
-mod player_movement_system;
+mod player_system;
 mod projectile;
 mod projectile_system;
 mod setup;
@@ -35,12 +38,14 @@ fn main() {
         .add_startup_system(setup::setup)
         .add_startup_system(spawn_player_1)
         .add_startup_system(spawn_player_2)
+        .add_system(handle_particle_map_rollover)
+        .add_system(handle_particle)
+        .add_system(handle_collision)
         .add_system(handle_player_map_rollover)
-        .add_system(handle_player_movement)
+        .add_system(handle_player)
         .add_system(handle_projectile_map_rollover)
         .add_system(handle_projectile)
-        .add_system(handle_player_weapon)
-        .add_system(handle_collision);
+        .add_system(handle_player_weapon);
 
     if debug_render {
         app.add_plugin(RapierDebugRenderPlugin::default());

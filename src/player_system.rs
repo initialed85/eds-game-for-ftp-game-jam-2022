@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::Velocity;
 
 use crate::player::Player;
 
-pub fn handle_player_movement(mut query: Query<(&Player, &Transform, &mut Velocity)>, keyboard_input: Res<Input<KeyCode>>) {
+pub fn handle_player(mut query: Query<(&Player, &Transform, &mut Velocity)>, keyboard_input: Res<Input<KeyCode>>) {
     for (player, transform, mut velocity) in query.iter_mut() {
         let is_left = keyboard_input.pressed(player.left_key);
         let is_right = keyboard_input.pressed(player.right_key);

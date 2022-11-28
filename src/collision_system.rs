@@ -1,48 +1,134 @@
-// TODO WIP
-// use bevy::hierarchy::DespawnRecursiveExt;
-// use bevy::prelude::{Commands, Entity, EventReader, Query};
-use bevy::prelude::{Entity, EventReader, Query};
-use bevy_rapier2d::prelude::CollisionEvent;
+use std::borrow::BorrowMut;
 
+use bevy::asset::Assets;
+use bevy::prelude::{ColorMaterial, Commands, Entity, EventReader, Mesh, Query, Res, ResMut, Time, Transform};
+use bevy_rapier2d::prelude::{CollisionEvent, Velocity};
+
+use crate::constants::{
+    PARTICLE_COUNT_FOR_PLAYERS_AGAINST_PLAYERS, PARTICLE_COUNT_FOR_PLAYERS_AGAINST_PROJECTILES, PARTICLE_COUNT_FOR_PROJECTILES,
+    PROJECTILE_RICOCHET_EXPIRY_S,
+};
+use crate::particle::spawn_particles;
 use crate::player::Player;
 use crate::projectile::Projectile;
-// TODO WIP
-// use crate::weapon::Weapon;
 
+// TODO: work out how to refactor this, borrow checker defeating me
 pub fn handle_collision(
-    mut projectile_query: Query<(Entity, &Projectile)>,
+    mut projectile_query: Query<(Entity, &mut Projectile)>,
     mut player_query: Query<(Entity, &Player)>,
+    mut transform_and_velocity_query: Query<(Entity, &Transform, &Velocity)>,
     mut collision_events: EventReader<CollisionEvent>,
-    // TODO WIP
-
-    // mut weapon_query: Query<(Entity, &Weapon)>,
-    // mut commands: Commands,
+    time: Res<Time>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for collision_event in collision_events.iter() {
         match collision_event {
             CollisionEvent::Started(entity_1, entity_2, _flags) => {
-                let entity_1_projectile = projectile_query.get_mut(entity_1.clone());
-                if entity_1_projectile.is_ok() {
-                    println!("entity_1={:?}", entity_1_projectile.unwrap());
-                    // TODO WIP
-                    // commands.entity(*entity_1).despawn_recursive();
+                let mut projectiles_involved = false;
+                let mut only_projectiles = false;
+
+                let mut projectile_item_1 = projectile_query.get_mut(*entity_1);
+                if projectile_item_1.is_ok() {
+                    projectiles_involved = true;
+
+                    let mut projectile = projectile_item_1.unwrap().1;
+                    projectile.expire_at = time.elapsed_seconds_f64() + PROJECTILE_RICOCHET_EXPIRY_S;
+                    projectile.has_ricocheted = true;
+
+                    let transform_and_velocity_item = transform_and_velocity_query.get_mut(*entity_1);
+
+                    if transform_and_velocity_item.is_ok() {
+                        let (_, transform, velocity) = transform_and_velocity_item.unwrap();
+                        spawn_particles(
+                            PARTICLE_COUNT_FOR_PROJECTILES,
+                            transform.clone(),
+                            velocity.clone(),
+                            time.clone(),
+                            commands.borrow_mut(),
+                            meshes.borrow_mut(),
+                            materials.borrow_mut(),
+                        );
+                    }
                 }
 
-                let entity_1_player = player_query.get_mut(entity_1.clone());
-                if entity_1_player.is_ok() {
-                    println!("entity_1={:?}", entity_1_player.unwrap());
+                let mut projectile_item_2 = projectile_query.get_mut(*entity_2);
+                if projectile_item_2.is_ok() {
+                    only_projectiles = projectiles_involved;
+                    projectiles_involved = true;
+
+                    let mut projectile = projectile_item_2.unwrap().1;
+                    projectile.expire_at = time.elapsed_seconds_f64() + PROJECTILE_RICOCHET_EXPIRY_S;
+                    projectile.has_ricocheted = true;
+
+                    let transform_and_velocity_item = transform_and_velocity_query.get_mut(*entity_2);
+
+                    if transform_and_velocity_item.is_ok() {
+                        let (_, transform, velocity) = transform_and_velocity_item.unwrap();
+                        spawn_particles(
+                            PARTICLE_COUNT_FOR_PROJECTILES,
+                            transform.clone(),
+                            velocity.clone(),
+                            time.clone(),
+                            commands.borrow_mut(),
+                            meshes.borrow_mut(),
+                            materials.borrow_mut(),
+                        );
+                    }
                 }
 
-                let entity_2_projectile = projectile_query.get_mut(entity_2.clone());
-                if entity_2_projectile.is_ok() {
-                    println!("entity_2={:?}", entity_2_projectile.unwrap());
-                    // commands.entity(*entity_2).despawn_recursive();
+                let mut particle_count = PARTICLE_COUNT_FOR_PLAYERS_AGAINST_PLAYERS;
+                if projectiles_involved {
+                    particle_count = PARTICLE_COUNT_FOR_PLAYERS_AGAINST_PROJECTILES;
                 }
 
-                let entity_2_player = player_query.get_mut(entity_2.clone());
-                if entity_2_player.is_ok() {
-                    // TODO WIP
-                    println!("entity_2={:?}", entity_2_player.unwrap());
+                let player_item_1 = player_query.get_mut(*entity_1);
+                if player_item_1.is_ok() {
+                    let transform_and_velocity_item = transform_and_velocity_query.get_mut(*entity_1);
+                    if transform_and_velocity_item.is_ok() {
+                        let (_, transform, velocity) = transform_and_velocity_item.unwrap();
+                        spawn_particles(
+                            particle_count,
+                            *transform,
+                            *velocity,
+                            time.clone(),
+                            commands.borrow_mut(),
+                            meshes.borrow_mut(),
+                            materials.borrow_mut(),
+                        );
+                    }
+                }
+
+                let player_item_2 = player_query.get_mut(*entity_2);
+                if player_item_2.is_ok() {
+                    let transform_and_velocity_item = transform_and_velocity_query.get_mut(*entity_2);
+                    if transform_and_velocity_item.is_ok() {
+                        let (_, transform, velocity) = transform_and_velocity_item.unwrap();
+                        spawn_particles(
+                            particle_count,
+                            *transform,
+                            *velocity,
+                            time.clone(),
+                            commands.borrow_mut(),
+                            meshes.borrow_mut(),
+                            materials.borrow_mut(),
+                        );
+                    }
+                }
+
+                if only_projectiles {
+                    projectile_item_1 = projectile_query.get_mut(*entity_1);
+                    if projectile_item_1.is_ok() {
+                        let mut projectile = projectile_item_1.unwrap().1;
+                        projectile.expire_at = time.elapsed_seconds_f64();
+                    }
+
+                    projectile_item_2 = projectile_query.get_mut(*entity_2);
+                    if projectile_item_2.is_ok() {
+                        let mut projectile = projectile_item_2.unwrap().1;
+                        projectile.expire_at = time.elapsed_seconds_f64();
+                    }
                 }
             }
             CollisionEvent::Stopped(_entity_1, _entity_2, _flags) => {

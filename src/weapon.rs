@@ -4,8 +4,9 @@ use bevy::asset::Assets;
 use bevy::math::Vec3;
 use bevy::prelude::{ColorMaterial, Commands, Component, Mesh, ResMut, Time, Transform};
 use bevy::utils::Uuid;
+use bevy_rapier2d::dynamics::Velocity;
 
-use crate::constants::WEAPON_FIRE_INTERVAL_S;
+use crate::constants::{MATERIAL_SCALE, WEAPON_FIRE_INTERVAL_S};
 use crate::projectile::spawn_projectile;
 
 #[derive(Debug, Component)]
@@ -26,6 +27,7 @@ impl Weapon {
         &mut self,
         time: Time,
         transform: &Transform,
+        velocity: Velocity,
         offset: Vec3,
         commands: &mut Commands,
         meshes: &mut ResMut<Assets<Mesh>>,
@@ -40,9 +42,10 @@ impl Weapon {
         let rotated_offset = transform.rotation.mul_vec3(offset);
 
         let mut projectile_transform = transform.clone();
+        projectile_transform.scale = Vec3::splat(MATERIAL_SCALE);
         projectile_transform.translation += rotated_offset;
 
-        spawn_projectile(self.borrow(), projectile_transform, time, commands, meshes, materials);
+        spawn_projectile(self.borrow(), projectile_transform, velocity, time, commands, meshes, materials);
 
         self.last_fired = now;
     }
