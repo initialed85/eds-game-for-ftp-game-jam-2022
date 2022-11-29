@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::{CollisionEvent, Velocity};
 
 use crate::constants::{
     PARTICLE_COUNT_FOR_PLAYERS_AGAINST_PLAYERS, PARTICLE_COUNT_FOR_PLAYERS_AGAINST_PROJECTILES, PARTICLE_COUNT_FOR_PROJECTILES,
-    PROJECTILE_RICOCHET_EXPIRY_S,
+    PROJECTILE_RICOCHET_EXPIRY,
 };
 use crate::particle::spawn_particles;
 use crate::player::Player;
@@ -34,7 +34,7 @@ pub fn handle_collision(
                     projectiles_involved = true;
 
                     let mut projectile = projectile_item_1.unwrap().1;
-                    projectile.expire_at = time.elapsed_seconds_f64() + PROJECTILE_RICOCHET_EXPIRY_S;
+                    projectile.expire_at = time.elapsed_seconds_f64() + PROJECTILE_RICOCHET_EXPIRY;
                     projectile.has_ricocheted = true;
 
                     let transform_and_velocity_item = transform_and_velocity_query.get_mut(*entity_1);
@@ -59,7 +59,7 @@ pub fn handle_collision(
                     projectiles_involved = true;
 
                     let mut projectile = projectile_item_2.unwrap().1;
-                    projectile.expire_at = time.elapsed_seconds_f64() + PROJECTILE_RICOCHET_EXPIRY_S;
+                    projectile.expire_at = time.elapsed_seconds_f64() + PROJECTILE_RICOCHET_EXPIRY;
                     projectile.has_ricocheted = true;
 
                     let transform_and_velocity_item = transform_and_velocity_query.get_mut(*entity_2);

@@ -3,18 +3,18 @@ use std::borrow::BorrowMut;
 use bevy::math::Vec3;
 use bevy::prelude::{GlobalTransform, Query, Transform};
 
-use crate::constants::BOUNDS;
+use crate::constants::{BOUNDS, HALF};
 use crate::particle::Particle;
 use crate::player::Player;
 use crate::projectile::Projectile;
 
-fn handle_map_rollover(half_width: f32, half_height: f32, transform: &mut Transform, global_transform: &GlobalTransform) {
-    let extents: Vec3 = Vec3::from((BOUNDS / 2.0, 0.0));
+fn handle_map_rollover(transform: &mut Transform, global_transform: &GlobalTransform) {
+    let extents: Vec3 = Vec3::from((BOUNDS * HALF, 0.0));
 
-    let right = extents.x + half_width;
-    let left = -extents.x - half_width;
-    let up = extents.y + half_height;
-    let down = -extents.y - half_height;
+    let right = extents.x;
+    let left = -extents.x;
+    let up = extents.y;
+    let down = -extents.y;
 
     if global_transform.translation().x > right {
         transform.translation.x = left
@@ -34,24 +34,23 @@ fn handle_map_rollover(half_width: f32, half_height: f32, transform: &mut Transf
 }
 
 pub fn handle_player_map_rollover(mut query: Query<(&Player, &mut Transform, &GlobalTransform)>) {
-    for (item, mut transform, global_transform) in query.iter_mut() {
-        handle_map_rollover(item.size.x / 2.0, item.size.y / 2.0, transform.borrow_mut(), global_transform)
+    for (_, mut transform, global_transform) in query.iter_mut() {
+        handle_map_rollover(transform.borrow_mut(), global_transform)
     }
 }
 
-// TODO: work out why this has an odd padding from the map boundary
 pub fn handle_projectile_map_rollover(mut query: Query<(&Projectile, &mut Transform, &GlobalTransform)>) {
     for (item, mut transform, global_transform) in query.iter_mut() {
         if item.has_ricocheted {
             continue;
         }
 
-        handle_map_rollover(item.size.x / 2.0, item.size.y / 2.0, transform.borrow_mut(), global_transform)
+        handle_map_rollover(transform.borrow_mut(), global_transform)
     }
 }
 
-pub fn handle_particle_map_rollover(mut query: Query<(&Particle, &mut Transform, &GlobalTransform)>) {
-    for (item, mut transform, global_transform) in query.iter_mut() {
-        handle_map_rollover(item.size.x / 2.0, item.size.y / 2.0, transform.borrow_mut(), global_transform)
+pub fn _handle_particle_map_rollover(mut query: Query<(&Particle, &mut Transform, &GlobalTransform)>) {
+    for (_, mut transform, global_transform) in query.iter_mut() {
+        handle_map_rollover(transform.borrow_mut(), global_transform)
     }
 }

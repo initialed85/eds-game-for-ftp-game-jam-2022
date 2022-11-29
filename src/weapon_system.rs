@@ -4,7 +4,7 @@ use bevy::asset::Assets;
 use bevy::prelude::{ColorMaterial, Commands, Input, KeyCode, Mesh, Query, Res, ResMut, Time, Transform, Vec3};
 use bevy_rapier2d::dynamics::Velocity;
 
-use crate::constants::MATERIAL_SCALE;
+use crate::constants::{PROJECTILE_SPAWN_OFFSET, PROJECTILE_Z_INDEX, ZERO};
 use crate::player::Player;
 use crate::weapon::Weapon;
 
@@ -16,7 +16,7 @@ pub fn handle_player_weapon(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let offset = Vec3::new(0.0, MATERIAL_SCALE, 0.0);
+    let offset = Vec3::new(ZERO, PROJECTILE_SPAWN_OFFSET, PROJECTILE_Z_INDEX);
 
     for (player, mut weapon, transform, velocity) in query.iter_mut() {
         if !keyboard_input.pressed(player.fire_key) {

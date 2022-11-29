@@ -5,7 +5,10 @@ use bevy::utils::Uuid;
 use bevy_rapier2d::dynamics::{Ccd, Damping, RigidBody, Sleeping, Velocity};
 use bevy_rapier2d::geometry::{ActiveEvents, Collider, ColliderMassProperties, Friction, Restitution};
 
-use crate::constants::{FRICTION_COEFFICIENT, MATERIAL_SCALE, PROJECTILE_DENSITY, PROJECTILE_EXPIRY_S, RESTITUTION_COEFFICIENT};
+use crate::constants::{
+    FRICTION_COEFFICIENT, MATERIAL_SCALE, PROJECTILE_DENSITY, PROJECTILE_DIMENSION, PROJECTILE_EXPIRY, PROJECTILE_SPEED,
+    PROJECTILE_Z_INDEX, RESTITUTION_COEFFICIENT, ZERO,
+};
 use crate::weapon::Weapon;
 
 #[derive(Debug, Component)]
@@ -22,7 +25,9 @@ fn get_projectile_material_mesh(
     transform: Transform,
 ) -> MaterialMesh2dBundle<ColorMaterial> {
     return MaterialMesh2dBundle {
-        mesh: meshes.add(Mesh::from(shape::Box::new(0.1, 0.1, 0.0))).into(),
+        mesh: meshes
+            .add(Mesh::from(shape::Box::new(PROJECTILE_DIMENSION, PROJECTILE_DIMENSION, ZERO)))
+            .into(),
         transform,
         material: materials.add(ColorMaterial::from(Color::WHITE)),
         ..default()
@@ -40,28 +45,31 @@ pub fn spawn_projectile(
 ) {
     let projectile = Projectile {
         weapon_uuid: weapon.uuid,
-        size: Vec3::new(0.1, 0.1, 0.0) * MATERIAL_SCALE / 2.0, // TODO
-        expire_at: time.elapsed_seconds_f64() + PROJECTILE_EXPIRY_S,
+        size: Vec3::new(PROJECTILE_DIMENSION, PROJECTILE_DIMENSION, ZERO) * MATERIAL_SCALE,
+        expire_at: time.elapsed_seconds_f64() + PROJECTILE_EXPIRY,
         has_ricocheted: false,
     };
 
     let projectile_mesh = get_projectile_material_mesh(meshes, materials, transform);
 
-    velocity.linvel += transform.rotation.mul_vec3(Vec3::new(0.0, 1000.0, 0.0)).truncate();
+    velocity.linvel += transform
+        .rotation
+        .mul_vec3(Vec3::new(ZERO, PROJECTILE_SPEED, PROJECTILE_Z_INDEX))
+        .truncate();
 
     commands
         .spawn((projectile_mesh, projectile))
         .insert(RigidBody::Dynamic)
         .insert(Sleeping::disabled())
-        .insert(Ccd::enabled())
-        .insert(Collider::cuboid(0.1, 0.1))
+        .insert(Ccd::disabled())
+        .insert(Collider::cuboid(PROJECTILE_DIMENSION, PROJECTILE_DIMENSION))
         .insert(Friction::coefficient(FRICTION_COEFFICIENT))
         .insert(Restitution::coefficient(RESTITUTION_COEFFICIENT))
         .insert(ColliderMassProperties::Density(PROJECTILE_DENSITY))
         .insert(velocity)
         .insert(Damping {
-            linear_damping: 0.0,
-            angular_damping: 0.0,
+            linear_damping: ZERO,
+            angular_damping: ZERO,
         })
         .insert(ActiveEvents::all());
 }

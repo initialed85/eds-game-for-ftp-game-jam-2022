@@ -3,7 +3,7 @@ use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Query, Res, Time, Tra
 use bevy_rapier2d::prelude::Velocity;
 use rand::{thread_rng, Rng};
 
-use crate::constants::PARTICLE_CHANGE_S;
+use crate::constants::{DEGREES_MAX, PARTICLE_CHANGE_S, PARTICLE_SPEED_CHANGE, ZERO};
 use crate::particle::Particle;
 
 pub fn handle_particle(mut query: Query<(Entity, &mut Particle, &mut Velocity)>, time: Res<Time>, mut commands: Commands) {
@@ -22,8 +22,8 @@ pub fn handle_particle(mut query: Query<(Entity, &mut Particle, &mut Velocity)>,
         let mut transform = Transform::default();
         let rnd: f32 = thread_rng().gen();
 
-        transform.rotation = Quat::from_rotation_z(f32::to_radians(rnd * 360.0));
-        velocity.linvel += transform.rotation.mul_vec3(Vec3::new(0.0, 50.0, 0.0)).truncate();
+        transform.rotation = Quat::from_rotation_z(f32::to_radians(rnd * DEGREES_MAX));
+        velocity.linvel += transform.rotation.mul_vec3(Vec3::new(ZERO, PARTICLE_SPEED_CHANGE, ZERO)).truncate();
         particle.change_at = time.elapsed_seconds_f64() + PARTICLE_CHANGE_S;
     }
 }

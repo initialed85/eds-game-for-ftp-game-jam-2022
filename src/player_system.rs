@@ -1,6 +1,7 @@
 use bevy::prelude::{Input, KeyCode, Query, Res, Transform, Vec3};
 use bevy_rapier2d::prelude::Velocity;
 
+use crate::constants::{PLAYER_ANGULAR_VELOCITY_MAX, PLAYER_ANGULAR_VELOCITY_STEP, PLAYER_LINEAR_VELOCITY};
 use crate::player::Player;
 
 pub fn handle_player(mut query: Query<(&Player, &Transform, &mut Velocity)>, keyboard_input: Res<Input<KeyCode>>) {
@@ -14,23 +15,23 @@ pub fn handle_player(mut query: Query<(&Player, &Transform, &mut Velocity)>, key
         let mut angular_velocity = velocity.angvel.clone();
 
         if is_left {
-            if angular_velocity <= 3.0 {
-                angular_velocity += 0.2;
+            if angular_velocity <= PLAYER_ANGULAR_VELOCITY_MAX {
+                angular_velocity += PLAYER_ANGULAR_VELOCITY_STEP;
             }
         }
 
         if is_right {
-            if angular_velocity >= -3.0 {
-                angular_velocity -= 0.2;
+            if angular_velocity >= -PLAYER_ANGULAR_VELOCITY_MAX {
+                angular_velocity -= PLAYER_ANGULAR_VELOCITY_STEP;
             }
         }
 
         if is_forward {
-            linear_velocity.y = 10.0;
+            linear_velocity.y = PLAYER_LINEAR_VELOCITY;
         }
 
         if is_backward {
-            linear_velocity.y = -10.0;
+            linear_velocity.y = -PLAYER_LINEAR_VELOCITY;
         }
 
         velocity.linvel += transform.rotation.mul_vec3(linear_velocity).truncate();

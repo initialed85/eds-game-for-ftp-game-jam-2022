@@ -6,7 +6,7 @@ use bevy::prelude::{ColorMaterial, Commands, Component, Mesh, ResMut, Time, Tran
 use bevy::utils::Uuid;
 use bevy_rapier2d::dynamics::Velocity;
 
-use crate::constants::{MATERIAL_SCALE, WEAPON_FIRE_INTERVAL_S};
+use crate::constants::{MATERIAL_SCALE, WEAPON_FIRE_INTERVAL};
 use crate::projectile::spawn_projectile;
 
 #[derive(Debug, Component)]
@@ -18,7 +18,7 @@ pub struct Weapon {
 pub fn get_weapon() -> Weapon {
     return Weapon {
         uuid: Uuid::new_v4(),
-        last_fired: 0.0,
+        last_fired: f64::default(),
     };
 }
 
@@ -35,7 +35,7 @@ impl Weapon {
     ) {
         let now = time.elapsed_seconds_f64();
 
-        if now < self.last_fired + WEAPON_FIRE_INTERVAL_S {
+        if now < self.last_fired + WEAPON_FIRE_INTERVAL {
             return;
         }
 

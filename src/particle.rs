@@ -7,7 +7,10 @@ use bevy_rapier2d::geometry::{Friction, Restitution};
 use rand::prelude::SliceRandom;
 use rand::{thread_rng, Rng};
 
-use crate::constants::{FRICTION_COEFFICIENT, MATERIAL_SCALE, PARTICLE_CHANGE_S, PARTICLE_EXPIRY_S, RESTITUTION_COEFFICIENT};
+use crate::constants::{
+    DEGREES_MAX, FRICTION_COEFFICIENT, MATERIAL_SCALE, PARTICLE_CHANGE_S, PARTICLE_DIMENSION, PARTICLE_EXPIRY_S, PARTICLE_SPEED,
+    PARTICLE_Z_INDEX, RESTITUTION_COEFFICIENT, ZERO,
+};
 
 #[derive(Debug, Component)]
 pub struct Particle {
@@ -26,7 +29,9 @@ fn get_particle_material_mesh(
         .unwrap_or_else(|| &Color::YELLOW);
 
     return MaterialMesh2dBundle {
-        mesh: meshes.add(Mesh::from(shape::Box::new(0.05, 0.05, 0.0))).into(),
+        mesh: meshes
+            .add(Mesh::from(shape::Box::new(PARTICLE_DIMENSION, PARTICLE_DIMENSION, ZERO)))
+            .into(),
         transform,
         material: materials.add(ColorMaterial::from(color)),
         ..default()
@@ -42,14 +47,14 @@ pub fn spawn_particle(
     materials: &mut ResMut<Assets<ColorMaterial>>,
 ) {
     let particle = Particle {
-        size: Vec3::new(0.05, 0.05, 0.0) * MATERIAL_SCALE / 2.0, // TODO
-        expire_at: time.elapsed_seconds_f64() + PARTICLE_EXPIRY_S + (thread_rng().gen::<f64>() * 1.0),
+        size: Vec3::new(PARTICLE_DIMENSION, PARTICLE_DIMENSION, ZERO) * MATERIAL_SCALE, // TODO
+        expire_at: time.elapsed_seconds_f64() + PARTICLE_EXPIRY_S + thread_rng().gen::<f64>(),
         change_at: time.elapsed_seconds_f64() + PARTICLE_CHANGE_S,
     };
 
     let particle_mesh = get_particle_material_mesh(meshes, materials, transform);
 
-    velocity.linvel += transform.rotation.mul_vec3(Vec3::new(0.0, 250.0, 0.0)).truncate();
+    velocity.linvel += transform.rotation.mul_vec3(Vec3::new(ZERO, PARTICLE_SPEED, ZERO)).truncate();
 
     commands
         .spawn((particle_mesh, particle))
@@ -60,8 +65,8 @@ pub fn spawn_particle(
         .insert(Restitution::coefficient(RESTITUTION_COEFFICIENT))
         .insert(velocity)
         .insert(Damping {
-            linear_damping: 0.0,
-            angular_damping: 0.0,
+            linear_damping: ZERO,
+            angular_damping: ZERO,
         });
 }
 
@@ -75,9 +80,10 @@ pub fn spawn_particles(
     materials: &mut ResMut<Assets<ColorMaterial>>,
 ) {
     transform.rotation = Quat::default();
+    transform.translation.z = PARTICLE_Z_INDEX;
 
     for i in 0..count {
-        transform.rotation = Quat::from_rotation_z(f32::to_radians((360.0 / count as f32) * i as f32));
+        transform.rotation = Quat::from_rotation_z(f32::to_radians((DEGREES_MAX / count as f32) * i as f32));
         spawn_particle(transform, velocity, time.clone(), commands, meshes, materials)
     }
 }
