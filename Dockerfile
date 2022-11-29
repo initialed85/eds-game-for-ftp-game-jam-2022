@@ -22,7 +22,6 @@ WORKDIR /srv/
 COPY --from=builder /srv/target /srv/target
 
 ENV WASM_SERVER_RUNNER_ADDRESS=0.0.0.0
-ENV WASM_SERVER_RUNNER_HTTPS=1
 
 EXPOSE 1334
 
