@@ -4,7 +4,7 @@ use bevy_rapier2d::prelude::Velocity;
 use rand::{thread_rng, Rng};
 
 use crate::constants::{DEGREES_MAX, PARTICLE_CHANGE_S, PARTICLE_SPEED_CHANGE, ZERO};
-use crate::particle::Particle;
+use crate::types::Particle;
 
 pub fn handle_particle(mut query: Query<(Entity, &mut Particle, &mut Velocity)>, time: Res<Time>, mut commands: Commands) {
     let now = time.elapsed_seconds_f64();

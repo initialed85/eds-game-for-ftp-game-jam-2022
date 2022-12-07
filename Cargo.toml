@@ -3,33 +3,37 @@ name = "eds-game-for-ftp-game-jam-2022"
 version = "0.1.0"
 edition = "2021"
 
-# Native
-#[dependencies]
-#bevy = { version = "0.9.0", features = ["dynamic"] }
-#rapier2d = { version = "0.16.1", features = ["simd-stable"] }
-#bevy_rapier2d = "0.19.0"
-#rand = "0.8.4"
-
-# WASM
 [dependencies]
+#bevy = { version = "0.9.0", features = ["dynamic"] }
 bevy = "0.9.0"
-rapier2d = "0.16.1"
+#rapier2d = { version = "0.16.1", features = ["simd-stable"] }
+rapier2d = { version = "0.16.1", features = ["enhanced-determinism"] }
 bevy_rapier2d = "0.19.0"
 wasm-bindgen = "0.2"
 rand = "0.8.4"
+console_error_panic_hook = "0.1"
+js-sys = "0.3"
+serde = "1.0.148"
+serde_json = "1.0.89"
+tungstenite = "0.18.0"
+ctrlc = { version = "3.2.3", optional = true, default-features = false }
+
+[features]
+server = ["ctrlc"]
+client = []
 
 [dependencies.web-sys]
-version = "0.3.60"
+version = "0.3.22"
 features = [
-    "Comment",
-    "Document",
-    "Element",
-    "EventTarget",
-    "HtmlCollection",
-    "Node",
-    "NodeList",
-    "Text",
-    "Window",
+    "BinaryType",
+    "Blob",
+    "ErrorEvent",
+    "FileReader",
+    "MessageEvent",
+    "ProgressEvent",
+    "WebSocket",
+    "Location",
+    "Window"
 ]
 
 # TODO: not recommended for release
@@ -41,19 +45,19 @@ debug = 1
 [profile.dev.package."*"]
 opt-level = 3
 
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y"]
+
+[target.wasm32-unknown-unknown]
+runner = "wasm-server-runner"
+
 [target.x86_64-unknown-linux-gnu]
 linker = "clang"
 rustflags = ["-Clink-arg=-fuse-ld=lld"]
 
-[target.x86_64-apple-darwin]
-rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y"]
+# [target.aarch64-apple-darwin]
+# rustflags = ["-C", "link-arg=-fuse-ld=/opt/homebrew/bin/zld", "-Zshare-generics=y"]
 
-[target.aarch64-apple-darwin]
-rustflags = ["-C", "link-arg=-fuse-ld=/opt/homebrew/bin/zld", "-Zshare-generics=y"]
-
-[target.x86_64-pc-windows-msvc]
-linker = "rust-lld.exe"
-rustflags = ["-Zshare-generics=n"]
-
-[target.wasm32-unknown-unknown]
-runner = "wasm-server-runner"
+# [target.x86_64-pc-windows-msvc]
+# linker = "rust-lld.exe"
+# rustflags = ["-Zshare-generics=n"]
