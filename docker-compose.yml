@@ -1,0 +1,25 @@
+services:
+
+  xvfb:
+    build:
+      dockerfile: xvfb/Dockerfile
+      context: .
+
+  server:
+    build:
+      dockerfile: server/Dockerfile
+      context: .
+    environment:
+      - "DISPLAY=${DISPLAY:-xvfb:0}"
+
+  client:
+    build:
+      dockerfile: client/Dockerfile
+      context: .
+
+  proxy:
+    build:
+      dockerfile: proxy/Dockerfile
+      context: .
+    ports:
+      - "${PROXY_PORT:-1334}:80"

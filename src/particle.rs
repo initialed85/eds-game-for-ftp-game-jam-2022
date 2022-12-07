@@ -1,6 +1,6 @@
 use bevy::asset::Assets;
 use bevy::math::{Quat, Vec3};
-use bevy::prelude::{default, shape, Color, ColorMaterial, Commands, Component, Mesh, ResMut, Time, Transform};
+use bevy::prelude::{default, shape, Color, ColorMaterial, Commands, Mesh, ResMut, Time, Transform};
 use bevy::sprite::MaterialMesh2dBundle;
 use bevy_rapier2d::dynamics::{Ccd, Damping, RigidBody, Sleeping, Velocity};
 use bevy_rapier2d::geometry::{Friction, Restitution};
@@ -11,13 +11,7 @@ use crate::constants::{
     DEGREES_MAX, FRICTION_COEFFICIENT, MATERIAL_SCALE, PARTICLE_CHANGE_S, PARTICLE_DIMENSION, PARTICLE_EXPIRY_S, PARTICLE_SPEED,
     PARTICLE_Z_INDEX, RESTITUTION_COEFFICIENT, ZERO,
 };
-
-#[derive(Debug, Component)]
-pub struct Particle {
-    pub size: Vec3,
-    pub expire_at: f64,
-    pub change_at: f64,
-}
+use crate::types::Particle;
 
 fn get_particle_material_mesh(
     meshes: &mut ResMut<'_, Assets<Mesh>>,
@@ -38,7 +32,7 @@ fn get_particle_material_mesh(
     };
 }
 
-pub fn spawn_particle(
+pub fn spawn_particle_at_client(
     transform: Transform,
     mut velocity: Velocity,
     time: Time,
@@ -70,7 +64,7 @@ pub fn spawn_particle(
         });
 }
 
-pub fn spawn_particles(
+pub fn spawn_particles_at_client(
     count: i8,
     mut transform: Transform,
     velocity: Velocity,
@@ -84,6 +78,6 @@ pub fn spawn_particles(
 
     for i in 0..count {
         transform.rotation = Quat::from_rotation_z(f32::to_radians((DEGREES_MAX / count as f32) * i as f32));
-        spawn_particle(transform, velocity, time.clone(), commands, meshes, materials)
+        spawn_particle_at_client(transform, velocity, time.clone(), commands, meshes, materials)
     }
 }

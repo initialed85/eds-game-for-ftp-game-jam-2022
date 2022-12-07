@@ -4,9 +4,8 @@ use bevy::math::Vec3;
 use bevy::prelude::{GlobalTransform, Query, Transform};
 
 use crate::constants::{BOUNDS, HALF};
-use crate::particle::Particle;
-use crate::player::Player;
-use crate::projectile::Projectile;
+use crate::types::Player;
+use crate::types::Projectile;
 
 fn handle_map_rollover(transform: &mut Transform, global_transform: &GlobalTransform) {
     let extents: Vec3 = Vec3::from((BOUNDS * HALF, 0.0));
@@ -45,12 +44,6 @@ pub fn handle_projectile_map_rollover(mut query: Query<(&Projectile, &mut Transf
             continue;
         }
 
-        handle_map_rollover(transform.borrow_mut(), global_transform)
-    }
-}
-
-pub fn _handle_particle_map_rollover(mut query: Query<(&Particle, &mut Transform, &GlobalTransform)>) {
-    for (_, mut transform, global_transform) in query.iter_mut() {
         handle_map_rollover(transform.borrow_mut(), global_transform)
     }
 }
