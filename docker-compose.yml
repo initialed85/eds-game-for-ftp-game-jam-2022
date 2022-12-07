@@ -1,11 +1,13 @@
 services:
 
   xvfb:
+    restart: always
     build:
       dockerfile: xvfb/Dockerfile
       context: .
 
   server:
+    restart: always
     build:
       dockerfile: server/Dockerfile
       context: .
@@ -13,11 +15,13 @@ services:
       - "DISPLAY=${DISPLAY:-xvfb:0}"
 
   client:
+    restart: always
     build:
       dockerfile: client/Dockerfile
       context: .
 
   proxy:
+    restart: always
     build:
       dockerfile: proxy/Dockerfile
       context: .
