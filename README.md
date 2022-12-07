@@ -47,17 +47,30 @@ What is it? Not sure yet- looks like it's gonna be a bit like a multiplayer Aste
 
 ### TODO
 
-In no particular order:
+Things I need to do:
+
+- Reduce the network overhead
+    - Send smaller messages / no messages when there are no changes
+    - Don't use JSON
+    - Don't send messages as frequently
+- Reduce the CPU overhead on the server
+    - I think it's because I'm naively servicing the WebSocket at 60Hz when I could probably let it buffer for a bit longer
+- Calculate projectiles on the server only (will mean more network traffic to describe their movement)
+- Disable collsions on the client-side as they _may_ disagree with the server right now
+
+Things I want to do:
 
 - Implement gamepad controls
 - Implement controls for mobile somehow
+- Add some scoring and other standard game stuff
+
+Things I should but probably won't do:
+
 - Refactor the state / event spaghetti
-- Work out how to get server CPU usage down
-    - I think it's because it's servicing the WebSocket at 60 fps (maybe more?)
 - Work out why the timestep doesn't behave as expected
-- Move the projectiles to be server-side only
-    - Right now they're actually managed in each client (and the server) and so there's a chance players attempts to shoot each other don't
-      agree lol
+- Add some abstractions; e.g.:
+    - Rather than have a player, just have a "thing" that can have a translation / rotation / velocity and be able to mark it for inclusion
+      in WebSocket updates
 
 ## Prerequisites (for macOS at least)
 
