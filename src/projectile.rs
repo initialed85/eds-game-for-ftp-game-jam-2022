@@ -80,7 +80,7 @@ pub fn spawn_projectile_at_server(weapon: &Weapon, transform: Transform, mut vel
         .truncate();
 
     commands
-        .spawn((projectile))
+        .spawn(projectile)
         .insert(RigidBody::Dynamic)
         .insert(Sleeping::disabled())
         .insert(Ccd::disabled())

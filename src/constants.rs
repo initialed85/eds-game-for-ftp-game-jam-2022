@@ -83,3 +83,4 @@ pub const PLAYER_2_STARTING_ROTATION_MULTIPLIER: f32 = 0.0;
 // network
 pub const SERVER_SUFFIX: &str = "/ws";
 pub const PLAYER_UPDATE_INTERVAL: f64 = 0.1;
+pub const PLAYER_EXPIRY_SECONDS: f64 = 5.0;

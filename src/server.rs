@@ -2,11 +2,11 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use bevy::math::Quat;
-use bevy::prelude::{Color, EventReader, EventWriter, NonSend, Query, Transform};
+use bevy::prelude::{Color, EventReader, EventWriter, NonSend, Query, Res, Time, Transform};
 use bevy_rapier2d::dynamics::Velocity;
 use rand::{thread_rng, Rng};
 
-use crate::constants::{BOUNDS, DEGREES_MAX, HALF, PLAYER_Z_INDEX};
+use crate::constants::{BOUNDS, DEGREES_MAX, HALF, PLAYER_EXPIRY_SECONDS, PLAYER_Z_INDEX};
 use crate::types::{Player, PlayerMessage};
 use crate::websocket_server::WebSocketServer;
 
@@ -20,6 +20,7 @@ pub fn handle_server_read(
     web_socket_server: NonSend<Rc<RefCell<WebSocketServer>>>,
     mut player_message_writer: EventWriter<PlayerMessage>,
     player_query: Query<(&Player, &Transform, &Velocity)>,
+    time: Res<Time>,
 ) {
     let mut web_socket_server = web_socket_server.borrow_mut();
 
@@ -190,6 +191,59 @@ pub fn handle_server_read(
         player_message_writer.send(player_message.clone());
 
         println!("despawn={:?}", player_message);
+    }
+
+    //
+    // handle stale players
+    //
+
+    for (player, _, _) in player_query.iter() {
+        if player.last_update == 0.0 {
+            continue;
+        }
+
+        if time.elapsed_seconds_f64() - player.last_update < PLAYER_EXPIRY_SECONDS {
+            continue;
+        }
+
+        // end of life for the a player
+        let mut player_message = PlayerMessage {
+            player_uuid: player.player_uuid.clone(),
+            event: "despawn".to_string(),
+            color: Default::default(),
+            is_incoming: false,
+            is_for_this_player: false,
+            translation_x: 0.0,
+            translation_y: 0.0,
+            translation_z: 0.0,
+            rotation_x: 0.0,
+            rotation_y: 0.0,
+            rotation_z: 0.0,
+            rotation_w: 0.0,
+            linvel_x: 0.0,
+            linvel_y: 0.0,
+            angvel: 0.0,
+            has_input: false,
+            is_left: false,
+            is_right: false,
+            is_forward: false,
+            is_backward: false,
+            is_firing: false,
+        };
+
+        // tell all players to despawn the leaving player
+        player_message_writer.send(player_message.clone());
+        let player_message_json_result = serde_json::to_string(&player_message);
+        if player_message_json_result.is_err() {
+            continue;
+        }
+        let player_message_json = player_message_json_result.unwrap();
+        web_socket_server.broadcast(player_message_json);
+
+        // tell the server to despawn the leaving player
+        player_message.is_incoming = true;
+        player_message.is_for_this_player = false;
+        player_message_writer.send(player_message.clone());
     }
 }
 

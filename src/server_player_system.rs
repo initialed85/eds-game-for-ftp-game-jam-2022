@@ -1,8 +1,7 @@
 use std::borrow::BorrowMut;
 
-use bevy::asset::Assets;
 use bevy::hierarchy::DespawnRecursiveExt;
-use bevy::prelude::{ColorMaterial, Commands, Entity, EventReader, EventWriter, Mesh, Query, ResMut, Transform, Vec3};
+use bevy::prelude::{Commands, Entity, EventReader, EventWriter, Query, Res, Time, Transform, Vec3};
 use bevy_rapier2d::prelude::Velocity;
 
 use crate::constants::{PLAYER_ANGULAR_VELOCITY_MAX, PLAYER_ANGULAR_VELOCITY_STEP, PLAYER_LINEAR_VELOCITY};
@@ -28,10 +27,10 @@ pub fn handle_spawn_player_at_server(mut player_message_reader: EventReader<Play
         transform.rotation.z = player_message.rotation_z;
         transform.rotation.w = player_message.rotation_w;
 
-        // let mut velocity = Velocity::default();
-        // velocity.linvel.x = player_message.linvel_x;
-        // velocity.linvel.y = player_message.linvel_y;
-        // velocity.angvel = player_message.angvel;
+        let mut velocity = Velocity::default();
+        velocity.linvel.x = player_message.linvel_x;
+        velocity.linvel.y = player_message.linvel_y;
+        velocity.angvel = player_message.angvel;
 
         if player_message.is_for_this_player {
             let commands = commands.borrow_mut();
@@ -83,13 +82,14 @@ pub fn handle_player_input_at_server(
     mut player_message_reader: EventReader<PlayerMessage>,
     mut player_query: Query<(&mut Player, &mut Transform, &mut Velocity)>,
     mut fire_weapon_writer: EventWriter<FireWeapon>,
+    time: Res<Time>,
 ) {
     for incoming_player_message in player_message_reader.iter() {
         if !incoming_player_message.is_incoming {
             continue;
         }
 
-        for (player, mut transform, mut velocity) in player_query.iter_mut() {
+        for (mut player, transform, mut velocity) in player_query.iter_mut() {
             if player.player_uuid != incoming_player_message.player_uuid {
                 continue;
             }
@@ -125,6 +125,8 @@ pub fn handle_player_input_at_server(
                     weapon_uuid: player.weapon_uuid,
                 })
             }
+
+            player.last_update = time.elapsed_seconds_f64();
         }
     }
 }
@@ -166,6 +168,7 @@ pub fn handle_player_update_at_server(
 
         player_message_writer.send(outgoing_player_message);
 
+        // TODO
         // if player_message.is_firing {
         //     fire_weapon_writer.send(FireWeapon {
         //         weapon_uuid: player.weapon_uuid,

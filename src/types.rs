@@ -21,7 +21,7 @@ pub struct Player {
     pub weapon_uuid: Uuid,
     pub is_local: bool,
     pub transform: Transform,
-    pub last_position_update: f64,
+    pub last_update: f64,
 }
 
 #[derive(Debug, Component)]

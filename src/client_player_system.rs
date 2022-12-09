@@ -9,7 +9,7 @@ use bevy::prelude::{
 use bevy_rapier2d::dynamics::Velocity;
 
 use crate::client_player::{spawn_other_player_at_client, spawn_this_player_at_client};
-use crate::constants::PLAYER_UPDATE_INTERVAL;
+use crate::constants::PLAYER_EXPIRY_SECONDS;
 use crate::types::{FireWeapon, Player, PlayerMessage};
 
 pub fn handle_spawn_player_at_client(
@@ -74,6 +74,7 @@ pub fn handle_spawn_player_at_client(
 pub fn handle_despawn_player_at_client(
     mut player_message_reader: EventReader<PlayerMessage>,
     mut player_query: Query<(Entity, &Player)>,
+    time: Res<Time>,
     mut commands: Commands,
 ) {
     let mut player_uuids = vec![];
@@ -90,8 +91,16 @@ pub fn handle_despawn_player_at_client(
         player_uuids.push(player_message.player_uuid);
     }
 
-    if player_uuids.len() == 0 {
-        return;
+    for (_, player) in player_query.iter_mut() {
+        if player.last_update == 0.0 {
+            continue;
+        }
+
+        if time.elapsed_seconds_f64() - player.last_update < PLAYER_EXPIRY_SECONDS {
+            continue;
+        }
+
+        player_uuids.push(player.player_uuid);
     }
 
     for (entity, player) in player_query.iter_mut() {
@@ -99,6 +108,9 @@ pub fn handle_despawn_player_at_client(
             continue;
         }
 
+        // shrug
+        commands.entity(entity).despawn();
+        commands.entity(entity).despawn_descendants();
         commands.entity(entity).despawn_recursive();
 
         warn!("handle_despawn_player; player={:?}", player);
@@ -108,7 +120,6 @@ pub fn handle_despawn_player_at_client(
 pub fn handle_player_input_at_client(
     mut player_query: Query<(&mut Player, &Transform, &Velocity)>,
     keyboard_input: Res<Input<KeyCode>>,
-    time: Res<Time>,
     mut player_message_writer: EventWriter<PlayerMessage>,
 ) {
     for (mut _player, _transform, _velocity) in player_query.iter_mut() {
@@ -151,12 +162,6 @@ pub fn handle_player_input_at_client(
         };
 
         player_message_writer.send(player_message);
-
-        if time.elapsed_seconds_f64() - player.last_position_update < PLAYER_UPDATE_INTERVAL {
-            continue;
-        }
-
-        player.last_position_update = time.elapsed_seconds_f64();
     }
 }
 
@@ -164,13 +169,14 @@ pub fn handle_player_update_at_client(
     mut player_message_reader: EventReader<PlayerMessage>,
     mut player_query: Query<(&mut Player, &mut Transform, &mut Velocity)>,
     mut fire_weapon_writer: EventWriter<FireWeapon>,
+    time: Res<Time>,
 ) {
     for player_message in player_message_reader.iter() {
         if !player_message.is_incoming {
             continue;
         }
 
-        for (player, mut transform, mut velocity) in player_query.iter_mut() {
+        for (mut player, mut transform, mut velocity) in player_query.iter_mut() {
             if player.player_uuid != player_message.player_uuid {
                 continue;
             }
@@ -193,6 +199,8 @@ pub fn handle_player_update_at_client(
                     weapon_uuid: player.weapon_uuid,
                 })
             }
+
+            player.last_update = time.elapsed_seconds_f64();
         }
     }
 }

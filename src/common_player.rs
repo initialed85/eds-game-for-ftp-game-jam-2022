@@ -1,9 +1,9 @@
-use bevy::reflect::Uuid;
-use bevy::prelude::{Color, KeyCode, Transform};
-use bevy::math::Vec3;
 use crate::constants::{MATERIAL_SCALE, PLAYER_HEIGHT_MULTIPLIER, PLAYER_WIDTH_MULTIPLIER};
 use crate::types::{Player, Weapon};
 use crate::weapon::get_weapon;
+use bevy::math::Vec3;
+use bevy::prelude::{Color, KeyCode, Transform};
+use bevy::reflect::Uuid;
 
 pub fn get_player_and_weapon(
     player_uuid: Uuid,
@@ -36,7 +36,7 @@ pub fn get_player_and_weapon(
         weapon_uuid: weapon.weapon_uuid,
         is_local,
         transform,
-        last_position_update: 0.0,
+        last_update: 0.0,
     };
 
     return (player, weapon);

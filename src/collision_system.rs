@@ -141,10 +141,8 @@ pub fn handle_collision_at_client(
 pub fn handle_collision_at_server(
     mut projectile_query: Query<(Entity, &mut Projectile)>,
     mut player_query: Query<(Entity, &Player)>,
-    mut transform_and_velocity_query: Query<(Entity, &Transform, &Velocity)>,
     mut collision_events: EventReader<CollisionEvent>,
     time: Res<Time>,
-    mut commands: Commands,
 ) {
     for collision_event in collision_events.iter() {
         match collision_event {

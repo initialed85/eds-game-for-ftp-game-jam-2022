@@ -25,8 +25,8 @@ pub struct WebSocketClient {
 
 impl WebSocketClient {
     pub fn new(server_uri: &str) -> Rc<RefCell<WebSocketClient>> {
-        // TODO: handle error (JsValue?)
         let ws = WebSocket::new(server_uri).unwrap();
+
         ws.set_binary_type(BinaryType::Arraybuffer);
 
         let web_socket_client = WebSocketClient {
