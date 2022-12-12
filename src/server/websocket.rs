@@ -1,11 +1,15 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::ErrorKind::WouldBlock;
 use std::net::{TcpListener, TcpStream};
+use std::rc::Rc;
 
 use bevy::utils::Uuid;
 use tungstenite::protocol::frame::coding::CloseCode::Normal;
 use tungstenite::protocol::CloseFrame;
 use tungstenite::{accept, Message, WebSocket};
+
+use crate::constants::{LISTEN_HOST, LISTEN_PORT};
 
 #[derive(Debug)]
 pub struct WebSocketServer {
@@ -66,9 +70,10 @@ impl WebSocketServer {
 
             let session_uuid = Uuid::new_v4();
             let web_socket = web_socket.unwrap();
-            self.web_socket_by_session_uuid.insert(session_uuid.clone(), web_socket);
+            self.web_socket_by_session_uuid
+                .insert(session_uuid.clone(), web_socket);
 
-            self.open_events.insert(0, session_uuid);
+            self.open_events.push(session_uuid);
             println!("open_event; session_uuid={:?}", session_uuid);
         }
     }
@@ -90,7 +95,7 @@ impl WebSocketServer {
 
         self.web_socket_by_session_uuid.remove(&session_uuid).unwrap();
 
-        self.close_events.insert(0, session_uuid);
+        self.close_events.push(session_uuid);
         println!("close_event; session_uuid={:?}", session_uuid);
     }
 
@@ -123,7 +128,7 @@ impl WebSocketServer {
 
             let message = message.to_string();
 
-            self.incoming_message_events.insert(0, (session_uuid, message.clone()));
+            self.incoming_message_events.push((session_uuid, message.clone()));
 
             // println!("message; message={:?}", message);
         }
@@ -177,6 +182,16 @@ impl WebSocketServer {
         self.handle_web_sockets();
     }
 
+    pub fn get_session_uuids(self: &mut WebSocketServer) -> Vec<Uuid> {
+        let mut session_uuids = vec![];
+
+        for (session_uuid, _) in self.web_socket_by_session_uuid.iter_mut() {
+            session_uuids.push(session_uuid.clone());
+        }
+
+        return session_uuids;
+    }
+
     pub fn get_open_events(self: &mut WebSocketServer) -> Vec<Uuid> {
         let open_events = self.open_events.to_vec();
         self.open_events.clear();
@@ -200,7 +215,8 @@ impl WebSocketServer {
 
         let message = Message::from(message.as_bytes().to_vec());
 
-        self.outgoing_message_events.push((session_uuid.clone(), message.clone()));
+        self.outgoing_message_events
+            .push((session_uuid.clone(), message.clone()));
 
         // println!("<<< send; session_uuid={:?}, message={:?}", session_uuid, message);
     }
@@ -217,9 +233,17 @@ impl WebSocketServer {
         }
 
         for session_uuid in session_uuids.iter() {
-            self.outgoing_message_events.push((session_uuid.clone(), message.clone()));
+            self.outgoing_message_events
+                .push((session_uuid.clone(), message.clone()));
         }
 
         // println!("<<< broadcast; message={:?}", message);
     }
+}
+
+pub fn get_websocket_server() -> Rc<RefCell<WebSocketServer>> {
+    return Rc::new(RefCell::new(WebSocketServer::new(
+        LISTEN_HOST.to_string(),
+        LISTEN_PORT,
+    )));
 }
