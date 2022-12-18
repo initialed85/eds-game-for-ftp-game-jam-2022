@@ -1,7 +1,7 @@
 use bevy::prelude::{EventReader, EventWriter};
 
 use crate::base::helpers::deserialize;
-use crate::types::event::{Join, Spawn};
+use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
 use crate::types::network::{Close, Container, IncomingMessage, Open};
 
 pub fn base_handle_open_event(mut open_event_reader: EventReader<Open>) {
@@ -14,6 +14,10 @@ pub fn base_handle_incoming_message_event(
     mut incoming_message_event_reader: EventReader<IncomingMessage>,
     mut join_event_writer: EventWriter<Join>,
     mut spawn_event_writer: EventWriter<Spawn>,
+    mut input_event_writer: EventWriter<Input>,
+    mut update_event_writer: EventWriter<Update>,
+    mut leave_event_writer: EventWriter<Leave>,
+    mut despawn_event_writer: EventWriter<Despawn>,
 ) {
     for incoming_message_event in incoming_message_event_reader.iter() {
         let container = deserialize::<Container>(incoming_message_event.message.clone());
@@ -22,6 +26,14 @@ pub fn base_handle_incoming_message_event(
             join_event_writer.send(container.join.unwrap());
         } else if container.message_type == "spawn" {
             spawn_event_writer.send(container.spawn.unwrap());
+        } else if container.message_type == "input" {
+            input_event_writer.send(container.input.unwrap());
+        } else if container.message_type == "update" {
+            update_event_writer.send(container.update.unwrap());
+        } else if container.message_type == "leave" {
+            leave_event_writer.send(container.leave.unwrap());
+        } else if container.message_type == "despawn" {
+            despawn_event_writer.send(container.despawn.unwrap());
         }
     }
 }

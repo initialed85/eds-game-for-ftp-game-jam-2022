@@ -1,7 +1,10 @@
 pub mod app;
 pub mod despawn;
+pub mod input;
 pub mod join;
 pub mod leave;
 pub mod network;
+pub mod setup;
 pub mod spawn;
+pub mod update;
 pub mod websocket;

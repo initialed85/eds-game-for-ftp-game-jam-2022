@@ -9,6 +9,7 @@ use tungstenite::protocol::frame::coding::CloseCode::Normal;
 use tungstenite::protocol::CloseFrame;
 use tungstenite::{accept, Message, WebSocket};
 
+use crate::base::helpers::serialize;
 use crate::constants::{LISTEN_HOST, LISTEN_PORT};
 
 #[derive(Debug)]
@@ -16,7 +17,7 @@ pub struct WebSocketServer {
     tcp_listener: TcpListener,
     web_socket_by_session_uuid: HashMap<Uuid, WebSocket<TcpStream>>,
     open_events: Vec<Uuid>,
-    incoming_message_events: Vec<(Uuid, String)>,
+    incoming_message_events: Vec<(Uuid, Vec<u8>)>,
     outgoing_message_events: Vec<(Uuid, Message)>,
     close_events: Vec<Uuid>,
 }
@@ -126,7 +127,7 @@ impl WebSocketServer {
                 continue;
             }
 
-            let message = message.to_string();
+            let message = message.into_data();
 
             self.incoming_message_events.push((session_uuid, message.clone()));
 
@@ -167,8 +168,27 @@ impl WebSocketServer {
         let outgoing_message_events = self.outgoing_message_events.to_vec();
         self.outgoing_message_events.clear();
 
+        let mut raw_messages_by_session_uuid: HashMap<Uuid, Vec<Vec<u8>>> = HashMap::new();
+
+        // TODO: fix going from Message back to Vec<u8>
         for (session_uuid, message) in outgoing_message_events.iter() {
-            self.handle_outgoing_message_event(session_uuid, message)
+            let session_uuid = session_uuid.clone();
+
+            if !raw_messages_by_session_uuid.contains_key(&session_uuid) {
+                raw_messages_by_session_uuid.insert(session_uuid, vec![]);
+            }
+
+            raw_messages_by_session_uuid
+                .get_mut(&session_uuid)
+                .unwrap()
+                .push(message.clone().into_data());
+        }
+
+        // TODO: fix double serialization
+        for (session_uuid, raw_messages) in raw_messages_by_session_uuid.iter() {
+            let batched_raw_messages = serialize(raw_messages);
+            let message = Message::from(batched_raw_messages);
+            self.handle_outgoing_message_event(session_uuid, &message);
         }
     }
 
@@ -198,7 +218,7 @@ impl WebSocketServer {
         return open_events;
     }
 
-    pub fn get_incoming_message_events(self: &mut WebSocketServer) -> Vec<(Uuid, String)> {
+    pub fn get_incoming_message_events(self: &mut WebSocketServer) -> Vec<(Uuid, Vec<u8>)> {
         let incoming_message_events = self.incoming_message_events.to_vec();
         self.incoming_message_events.clear();
         return incoming_message_events;
@@ -210,10 +230,10 @@ impl WebSocketServer {
         return close_events;
     }
 
-    pub fn send(self: &mut WebSocketServer, session_uuid: Uuid, message: String) {
+    pub fn send(self: &mut WebSocketServer, session_uuid: Uuid, message: Vec<u8>) {
         // println!(">>> send; session_uuid={:?}, message={:?}", session_uuid, message);
 
-        let message = Message::from(message.as_bytes().to_vec());
+        let message = Message::from(message);
 
         self.outgoing_message_events
             .push((session_uuid.clone(), message.clone()));
@@ -221,10 +241,10 @@ impl WebSocketServer {
         // println!("<<< send; session_uuid={:?}, message={:?}", session_uuid, message);
     }
 
-    pub fn broadcast(self: &mut WebSocketServer, message: String) {
+    pub fn broadcast(self: &mut WebSocketServer, message: Vec<u8>) {
         // println!(">>> broadcast; message={:?}", message);
 
-        let message = Message::from(message.as_bytes().to_vec());
+        let message = Message::from(message);
 
         let mut session_uuids = vec![];
 

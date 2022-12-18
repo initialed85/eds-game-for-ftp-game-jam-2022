@@ -1,7 +1,7 @@
 use bevy::utils::Uuid;
 use serde::{Deserialize, Serialize};
 
-use crate::types::event::{Despawn, Join, Leave, Spawn, Update};
+use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
 
 //
 // For the WebSocket layer
@@ -15,14 +15,14 @@ pub struct Open {
 #[derive(Debug, Clone)]
 pub struct IncomingMessage {
     pub session_uuid: Uuid,
-    pub message: String,
+    pub message: Vec<u8>,
 }
 
 #[derive(Debug, Clone)]
 pub struct OutgoingMessage {
     pub session_uuid: Option<Uuid>,
     pub not_session_uuid: Option<Uuid>,
-    pub message: String, // a serialized Container
+    pub message: Vec<u8>, // a serialized Container
 }
 
 #[derive(Debug, Clone)]
@@ -37,9 +37,10 @@ pub struct Close {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Container {
     pub message_type: String,
-    // one of "join", "spawn", "update", "despawn", "leave"
+    // one of "join", "spawn", "input", "update", "despawn", "leave"
     pub join: Option<Join>,
     pub spawn: Option<Spawn>,
+    pub input: Option<Input>,
     pub update: Option<Update>,
     pub despawn: Option<Despawn>,
     pub leave: Option<Leave>,

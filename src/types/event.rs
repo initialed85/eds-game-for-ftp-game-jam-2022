@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Join {
     pub player_uuid: Uuid,
+    pub is_for_local_player: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14,8 +15,6 @@ pub struct SerializableTransform {
     pub rotation: Quat,
     pub scale: Vec3,
 }
-
-// TODO: proper Serialize / Deserialize traits
 
 impl SerializableTransform {
     pub fn from_transform(transform: Transform) -> SerializableTransform {
@@ -45,8 +44,6 @@ pub struct SerializableVelocity {
     pub angvel: f32,
 }
 
-// TODO: proper Serialize / Deserialize traits
-
 impl SerializableVelocity {
     pub fn from_velocity(velocity: Velocity) -> SerializableVelocity {
         let velocity = velocity.clone();
@@ -70,21 +67,37 @@ impl SerializableVelocity {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Spawn {
     pub entity_uuid: Uuid,
+    // e.g. "player", "projectile" etc
     pub entity_type: String,
-    // one of "player" or "projectile"
     pub transform: Option<SerializableTransform>,
     pub velocity: Option<SerializableVelocity>,
     pub color: Option<Color>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Input {
+    pub player_uuid: Uuid,
+    pub is_left: bool,
+    pub is_right: bool,
+    pub is_forward: bool,
+    pub is_backward: bool,
+    pub is_firing: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Update {
     pub entity_uuid: Uuid,
+    pub transform: Option<SerializableTransform>,
+    pub velocity: Option<SerializableVelocity>,
+    pub includes_rollover: bool,
+    pub handled_at: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Despawn {
     pub entity_uuid: Uuid,
+    // one of "player" or "projectile"
+    pub entity_type: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

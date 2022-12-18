@@ -13,6 +13,7 @@ pub fn handle_despawn_event(
             message_type: "despawn".to_string(),
             join: None,
             spawn: None,
+            input: None,
             update: None,
             despawn: Some(despawn_event.clone()),
             leave: None,

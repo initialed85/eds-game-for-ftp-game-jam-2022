@@ -1,4 +1,4 @@
-use bevy::prelude::{EventReader, EventWriter, Mesh, Res, ResMut, Time};
+use bevy::prelude::{EventReader, EventWriter};
 
 use crate::base::helpers::serialize;
 use crate::types::event::Spawn;
@@ -14,6 +14,7 @@ pub fn handle_spawn_event(
             join: None,
             spawn: Some(spawn_event.clone()),
             update: None,
+            input: None,
             despawn: None,
             leave: None,
         });

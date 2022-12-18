@@ -12,22 +12,22 @@ pub fn handle_leave_event(
     for leave_event in leave_event_reader.iter() {
         despawn_event_writer.send(Despawn {
             entity_uuid: leave_event.player_uuid,
-        });
-
-        let message = serialize(Container {
-            message_type: "leave".to_string(),
-            join: None,
-            spawn: None,
-            update: None,
-            despawn: None,
-            leave: Some(leave_event.clone()),
+            entity_type: "player".to_string(),
         });
 
         // tell everyone the player has left
         outgoing_message_event_writer.send(OutgoingMessage {
             session_uuid: None,
             not_session_uuid: None,
-            message: message.clone(),
+            message: serialize(Container {
+                message_type: "leave".to_string(),
+                join: None,
+                spawn: None,
+                input: None,
+                update: None,
+                despawn: None,
+                leave: Some(leave_event.clone()),
+            }),
         });
     }
 }

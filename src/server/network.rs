@@ -2,8 +2,9 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use bevy::log::trace;
-use bevy::prelude::{EventReader, EventWriter, NonSend};
+use bevy::prelude::{EventReader, EventWriter, NonSend, Query};
 
+use crate::identity::player::Player;
 use crate::server::websocket::WebSocketServer;
 use crate::types::event::{Join, Leave};
 use crate::types::network::{Close, IncomingMessage, Open, OutgoingMessage};
@@ -21,27 +22,27 @@ pub fn handle_websocket_server(
     for outgoing_message_event in outgoing_message_event_reader.iter() {
         if outgoing_message_event.session_uuid.is_some() {
             let session_uuid = outgoing_message_event.session_uuid.unwrap();
-            trace!(
-                "handle_websocket_server; incoming_message - session_uuid={:?}, message={:?}",
-                session_uuid,
-                outgoing_message_event.message
-            );
+            // trace!(
+            //     "handle_websocket_server; outgoing_message - session_uuid={:?}, message={:?}",
+            //     session_uuid,
+            //     outgoing_message_event.message
+            // );
             web_socket.send(session_uuid.clone(), outgoing_message_event.message.clone())
         } else if outgoing_message_event.session_uuid.is_none() {
             if outgoing_message_event.not_session_uuid.is_none() {
-                trace!(
-                    "handle_websocket_server; outgoing_message - session_uuid=(broadcast), message={:?}",
-                    outgoing_message_event.message
-                );
+                // trace!(
+                //     "handle_websocket_server; outgoing_message - session_uuid=(broadcast), message={:?}",
+                //     outgoing_message_event.message
+                // );
                 web_socket.broadcast(outgoing_message_event.message.clone());
             } else {
                 let not_session_uuid = outgoing_message_event.not_session_uuid.unwrap();
 
-                trace!(
-                    "handle_websocket_server; outgoing_message - not_session_uuid={:?}, message={:?}",
-                    not_session_uuid,
-                    outgoing_message_event.message
-                );
+                // trace!(
+                //     "handle_websocket_server; outgoing_message - not_session_uuid={:?}, message={:?}",
+                //     not_session_uuid,
+                //     outgoing_message_event.message
+                // );
 
                 let session_uuids = web_socket.get_session_uuids();
 
@@ -68,11 +69,11 @@ pub fn handle_websocket_server(
 
     let websocket_incoming_message_events = web_socket.get_incoming_message_events();
     for (session_uuid, message) in websocket_incoming_message_events.iter() {
-        trace!(
-            "handle_websocket_server; incoming_message - session_uuid={:?}, message={:?}",
-            session_uuid,
-            message
-        );
+        // trace!(
+        //     "handle_websocket_server; incoming_message - session_uuid={:?}, message={:?}",
+        //     session_uuid,
+        //     message
+        // );
         incoming_message_event_writer.send(IncomingMessage {
             session_uuid: session_uuid.clone(),
             message: message.clone(),
@@ -88,10 +89,21 @@ pub fn handle_websocket_server(
     }
 }
 
-pub fn handle_open_event(mut open_event_reader: EventReader<Open>, mut join_event_writer: EventWriter<Join>) {
+pub fn handle_open_event(
+    mut open_event_reader: EventReader<Open>,
+    player_query: Query<&Player>,
+    mut join_event_writer: EventWriter<Join>,
+) {
     for open_event in open_event_reader.iter() {
+        let mut other_player_uuids = vec![];
+
+        for other_player in player_query.iter() {
+            other_player_uuids.push(other_player.player_uuid);
+        }
+
         join_event_writer.send(Join {
             player_uuid: open_event.session_uuid,
+            is_for_local_player: true,
         });
     }
 }
