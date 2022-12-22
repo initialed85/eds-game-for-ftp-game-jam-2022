@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: eds-game-for-ftp-game-jam-2022
+  name: server-config-map
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: eds-game-for-ftp-game-jam-2022
+  name: server-deployment
+  labels:
+    app: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      nodeSelector:
+        gpu: "yes"
+        home-role: "storage"
+      runtimeClassName: nvidia
+      containers:
+        - name: server
+          image: kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest
+          env:
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: all
+            - name: DISPLAY
+              value: "xvfb:0"
+          ports:
+            - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server
+  namespace: eds-game-for-ftp-game-jam-2022
+spec:
+  selector:
+    app: server
+  ports:
+    - name: server
+      port: 8080
+      targetPort: 8080

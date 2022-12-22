@@ -5,7 +5,8 @@ What is it? Not sure yet- looks like it's gonna be a bit like a multiplayer Aste
 ## Context
 
 - [FTP](https://www.ftpsolutions.com.au/) is the place I work
-- [One of the team members](https://github.com/shane-smt) suggested [a game jam](https://itch.io/jam/ftp-gamejam)
+- [One of the team members](https://github.com/shane-smt)
+  suggested [a game jam](https://itch.io/jam/ftp-gamejam)
 - I've been dying for an excuse to learn Rust
 
 ## Approach
@@ -51,12 +52,10 @@ Things I need to do:
 
 - Reduce the network overhead
     - Send smaller messages / no messages when there are no changes
-    - Don't use JSON
-    - Don't send messages as frequently
+    - Don't send messages as frequently?
 - Reduce the CPU overhead on the server
-    - I think it's because I'm naively servicing the WebSocket at 60Hz when I could probably let it buffer for a bit longer
-- Calculate projectiles on the server only (will mean more network traffic to describe their movement)
-- Disable collsions on the client-side as they _may_ disagree with the server right now
+    - I think it's because I'm naively servicing the WebSocket at 60Hz when I could probably let it buffer for
+      a bit longer
 
 Things I want to do:
 
@@ -64,17 +63,10 @@ Things I want to do:
 - Implement controls for mobile somehow
 - Add some scoring and other standard game stuff
 
-Things I should but probably won't do:
-
-- Refactor the state / event spaghetti
-- Work out why the timestep doesn't behave as expected
-- Add some abstractions; e.g.:
-    - Rather than have a player, just have a "thing" that can have a translation / rotation / velocity and be able to mark it for inclusion
-      in WebSocket updates
-
 ## Prerequisites (for macOS at least)
 
-I basically the [getting started page](https://bevyengine.org/learn/book/getting-started/setup/) from the Bevy website.
+I basically the [getting started page](https://bevyengine.org/learn/book/getting-started/setup/) from the Bevy
+website.
 
 - [Rust](https://www.rust-lang.org/)
 - [zld](https://github.com/michaeleisel/zld)

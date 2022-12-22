@@ -21,10 +21,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > install.sh && \
 
 ENV PATH=${PATH}:/root/.cargo/bin/
 
-RUN \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/srv/target \
-    rustup update
+RUN rustup update
 
 RUN apt-get install -y dbus-x11 libxv1 mesa-utils mesa-utils-extra psmisc procps
 
