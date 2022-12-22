@@ -2,14 +2,13 @@ use bevy::asset::Assets;
 use bevy::ecs::system::EntityCommands;
 use bevy::math::{Quat, Vec3};
 use bevy::prelude::{
-    default, shape, Color, ColorMaterial, Commands, Component, DespawnRecursiveExt, Entity, Mesh, Query, Res,
-    ResMut, Time, Transform,
+    default, shape, Color, ColorMaterial, Commands, Component, Entity, Mesh, Query, Res, ResMut, Time,
+    Transform,
 };
 use bevy::reflect::Uuid;
 use bevy::sprite::MaterialMesh2dBundle;
 use bevy_rapier2d::dynamics::RigidBody::Dynamic;
 use bevy_rapier2d::dynamics::{Sleeping, Velocity};
-use rand::prelude::SliceRandom;
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
@@ -92,7 +91,12 @@ pub fn despawn_particle(
             continue;
         }
 
-        commands.entity(entity).despawn();
+        let entity_commands = commands.get_entity(entity);
+        if entity_commands.is_none() {
+            continue;
+        }
+
+        entity_commands.unwrap().despawn();
     }
 }
 

@@ -1,4 +1,3 @@
-use bevy::log::trace;
 use bevy::prelude::{EventReader, Query, Res, Time, Transform};
 use bevy_rapier2d::prelude::Velocity;
 

@@ -1,5 +1,8 @@
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::log::trace;
 use bevy::prelude::{App, IntoSystemDescriptor};
+use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_rapier2d::prelude::RapierDebugRenderPlugin;
 
 use crate::base::app::get_base_app;
 use crate::base::network::{
@@ -39,6 +42,17 @@ pub fn get_app_for_client() -> App {
     app.add_system(handle_input_event.before(handle_input_from_keyboard));
     app.add_system(handle_update_event.after(handle_input_event));
     app.add_system(handle_update_for_moveable.after(handle_update_event));
+
+    let _ = RapierDebugRenderPlugin::default();
+    let _ = WorldInspectorPlugin::new();
+    let _ = LogDiagnosticsPlugin::default();
+    let _ = FrameTimeDiagnosticsPlugin::default();
+
+    // TODO: debugging related
+    // app.add_plugin(RapierDebugRenderPlugin::default());
+    // app.add_plugin(WorldInspectorPlugin::new());
+    // app.add_plugin(LogDiagnosticsPlugin::default());
+    // app.add_plugin(FrameTimeDiagnosticsPlugin::default());
 
     trace!("client.get_app(); returning app={:?}", app);
 

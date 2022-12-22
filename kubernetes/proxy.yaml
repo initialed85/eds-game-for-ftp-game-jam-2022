@@ -1,0 +1,55 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: eds-game-for-ftp-game-jam-2022
+  name: proxy-config-map
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: eds-game-for-ftp-game-jam-2022
+  name: proxy-deployment
+  labels:
+    app: proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxy
+  template:
+    metadata:
+      labels:
+        app: proxy
+    spec:
+      containers:
+        - name: proxy
+          image: kube-registry:5000/eds-game-for-ftp-game-jam-2022-proxy:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy
+  namespace: eds-game-for-ftp-game-jam-2022
+spec:
+  selector:
+    app: proxy
+  ports:
+    - name: proxy
+      port: 80
+      targetPort: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: eds-game-for-ftp-game-jam-2022
+  name: proxy-ingressroute
+spec:
+  routes:
+    - match: HostRegexp(`{subdomain:eds-game-for-ftp-game-jam-2022}.{any:.*}`)
+      kind: Rule
+      services:
+        - name: proxy
+          port: 80

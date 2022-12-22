@@ -9,6 +9,10 @@ pub fn handle_despawn_event(
     mut outgoing_message_event_writer: EventWriter<OutgoingMessage>,
 ) {
     for despawn_event in despawn_event_reader.iter() {
+        if despawn_event.entity_type == "particle" {
+            continue;
+        }
+
         let message = serialize(Container {
             message_type: "despawn".to_string(),
             join: None,

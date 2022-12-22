@@ -1,3 +1,4 @@
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::log::trace;
 use bevy::prelude::{App, IntoSystemDescriptor};
 use bevy_inspector_egui::WorldInspectorPlugin;
@@ -66,10 +67,14 @@ pub fn get_app_for_server() -> App {
 
     let _ = RapierDebugRenderPlugin::default();
     let _ = WorldInspectorPlugin::new();
+    let _ = LogDiagnosticsPlugin::default();
+    let _ = FrameTimeDiagnosticsPlugin::default();
 
     // TODO: debugging related
-    app.add_plugin(RapierDebugRenderPlugin::default());
-    app.add_plugin(WorldInspectorPlugin::new());
+    // app.add_plugin(RapierDebugRenderPlugin::default());
+    // app.add_plugin(WorldInspectorPlugin::new());
+    // app.add_plugin(LogDiagnosticsPlugin::default());
+    // app.add_plugin(FrameTimeDiagnosticsPlugin::default());
 
     trace!("client.get_app(); returning app={:?}", app);
 

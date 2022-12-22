@@ -1,13 +1,7 @@
 FROM rust:1.65.0-slim-bullseye AS base
 
-RUN \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/srv/target \
-    rustup target add wasm32-unknown-unknown
-RUN \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/srv/target \
-    cargo install wasm-server-runner
+RUN rustup target add wasm32-unknown-unknown
+RUN cargo install wasm-server-runner
 
 WORKDIR /srv/
 

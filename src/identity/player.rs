@@ -2,8 +2,8 @@ use bevy::asset::Assets;
 use bevy::ecs::system::EntityCommands;
 use bevy::math::Vec3;
 use bevy::prelude::{
-    default, shape, Color, ColorMaterial, Commands, Component, DespawnRecursiveExt, Entity, Mesh, Query, Res,
-    ResMut, Time, Transform,
+    default, shape, Color, ColorMaterial, Commands, Component, Entity, Mesh, Query, Res, ResMut, Time,
+    Transform,
 };
 use bevy::sprite::MaterialMesh2dBundle;
 use bevy::utils::Uuid;
@@ -153,6 +153,11 @@ pub fn despawn_player(
             continue;
         }
 
-        commands.entity(entity).despawn();
+        let entity_commands = commands.get_entity(entity);
+        if entity_commands.is_none() {
+            continue;
+        }
+
+        entity_commands.unwrap().despawn();
     }
 }

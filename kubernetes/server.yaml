@@ -22,10 +22,18 @@ spec:
       labels:
         app: server
     spec:
+      nodeSelector:
+        gpu: "yes"
+        home-role: "storage"
+      runtimeClassName: nvidia
       containers:
         - name: server
           image: kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest
           env:
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: all
             - name: DISPLAY
               value: "xvfb:0"
           ports:
@@ -44,28 +52,3 @@ spec:
     - name: server
       port: 8080
       targetPort: 8080
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  namespace: eds-game-for-ftp-game-jam-2022
-  name: server-middleware-stripprefix
-spec:
-  stripPrefix:
-    prefixes:
-      - ws
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: eds-game-for-ftp-game-jam-2022
-  name: server-ingressroute
-spec:
-  routes:
-    - match: HostRegexp(`{subdomain:eds-game-for-ftp-game-jam-2022}.{any:.*}`) && PathPrefix(`ws`)
-      kind: Rule
-      middlewares:
-        - name: server-middleware-stripprefix
-      services:
-        - name: server
-          port: 8080

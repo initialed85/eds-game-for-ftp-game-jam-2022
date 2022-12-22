@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::log::LogPlugin;
 use bevy::math::Vec2;
 use bevy::prelude::{
@@ -10,7 +11,8 @@ use bevy::time::FixedTimestep;
 use bevy::window::PresentMode;
 use bevy::window::WindowPosition::At;
 use bevy::DefaultPlugins;
-use bevy_rapier2d::prelude::{NoUserData, RapierPhysicsPlugin};
+use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
 
 use crate::base::despawn::base_handle_despawn_event;
 use crate::base::join::base_handle_join_event;
@@ -47,8 +49,8 @@ pub fn get_base_app() -> App {
                 ..default()
             })
             .set(LogPlugin {
-                filter: "eds_game_for_ftp_game_jam_2022=trace".into(),
-                level: bevy::log::Level::WARN,
+                filter: "eds_game_for_ftp_game_jam_2022=trace,wgpu_core=warn,bevy_render=warn".into(),
+                level: bevy::log::Level::INFO,
             }),
     );
 
@@ -98,6 +100,17 @@ pub fn get_base_app() -> App {
     app.add_system(handle_particle.after(handle_collision_event));
     app.add_system(handle_expireable.after(handle_collision_event));
     app.add_system(base_handle_despawn_event.after(base_handle_leave_event));
+
+    let _ = RapierDebugRenderPlugin::default();
+    let _ = WorldInspectorPlugin::new();
+    let _ = LogDiagnosticsPlugin::default();
+    let _ = FrameTimeDiagnosticsPlugin::default();
+
+    // TODO: debugging related
+    // app.add_plugin(RapierDebugRenderPlugin::default());
+    // app.add_plugin(WorldInspectorPlugin::new());
+    app.add_plugin(LogDiagnosticsPlugin::default());
+    app.add_plugin(FrameTimeDiagnosticsPlugin::default());
 
     trace!("base.get_app(); returning app={:?}", app);
 
