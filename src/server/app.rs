@@ -57,7 +57,11 @@ pub fn get_app_for_server() -> App {
     app.add_system(handle_despawn_event.after(handle_leave_event));
 
     // game input / update handlers
-    app.add_system(handle_input_event.after(handle_websocket_server));
+    app.add_system(
+        handle_input_event
+            .after(handle_websocket_server)
+            .with_run_criteria(FixedTimestep::step(TIME_STEP as f64)),
+    );
     app.add_system(
         handle_input_for_player
             .after(handle_input_event)
@@ -73,7 +77,11 @@ pub fn get_app_for_server() -> App {
             .after(handle_input_for_player)
             .with_run_criteria(FixedTimestep::step(TIME_STEP as f64)),
     );
-    app.add_system(handle_update_event.after(handle_update_for_moveable));
+    app.add_system(
+        handle_update_event
+            .after(handle_update_for_moveable)
+            .with_run_criteria(FixedTimestep::step(TIME_STEP as f64)),
+    );
     app.add_system(handle_fire_event.after(handle_update_event));
     app.add_system(handle_rapier_collision_event.after(handle_fire_event));
     app.add_system(handle_collision_event.after(handle_rapier_collision_event));
