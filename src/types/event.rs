@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 pub struct Join {
     pub player_uuid: Uuid,
     pub is_for_local_player: bool,
+    pub server_time_at_join: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

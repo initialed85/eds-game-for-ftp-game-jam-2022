@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use bevy::log::trace;
-use bevy::prelude::{EventReader, EventWriter, NonSend, Query};
+use bevy::prelude::{EventReader, EventWriter, NonSend, Query, Res, Time};
 
 use crate::identity::player::Player;
 use crate::server::websocket::WebSocketServer;
@@ -93,6 +93,7 @@ pub fn handle_open_event(
     mut open_event_reader: EventReader<Open>,
     player_query: Query<&Player>,
     mut join_event_writer: EventWriter<Join>,
+    time: Res<Time>,
 ) {
     for open_event in open_event_reader.iter() {
         let mut other_player_uuids = vec![];
@@ -104,6 +105,7 @@ pub fn handle_open_event(
         join_event_writer.send(Join {
             player_uuid: open_event.session_uuid,
             is_for_local_player: true,
+            server_time_at_join: time.elapsed_seconds_f64(),
         });
     }
 }

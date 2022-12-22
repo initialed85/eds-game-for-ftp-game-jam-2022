@@ -67,6 +67,8 @@ pub fn get_base_app() -> App {
         local_player_uuid: None,
         player_uuids: HashSet::new(),
         last_update: 0.0,
+        server_time_at_join: 0.0,
+        client_time_at_join: 0.0,
     });
 
     app.add_startup_system(base_handle_setup);

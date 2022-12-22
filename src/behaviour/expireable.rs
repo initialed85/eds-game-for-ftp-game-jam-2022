@@ -2,7 +2,6 @@ use bevy::prelude::{Component, Entity, EventWriter, Query, Res, Time};
 use bevy::utils::Uuid;
 use serde::{Deserialize, Serialize};
 
-use crate::constants::TIME_STEP;
 use crate::identity::particle::Particle;
 use crate::identity::player::Player;
 use crate::identity::projectile::Projectile;

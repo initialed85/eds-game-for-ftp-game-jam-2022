@@ -1,7 +1,6 @@
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::log::trace;
 use bevy::prelude::{App, IntoSystemDescriptor};
-use bevy::time::FixedTimestep;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::RapierDebugRenderPlugin;
 
@@ -14,7 +13,6 @@ use crate::client::network::handle_websocket_client;
 use crate::client::setup::handle_setup;
 use crate::client::update::{handle_update_event, handle_update_for_moveable};
 use crate::client::websocket::get_websocket_client;
-use crate::constants::TIME_STEP;
 
 pub fn get_app_for_client() -> App {
     let mut app = get_base_app();
@@ -43,11 +41,7 @@ pub fn get_app_for_client() -> App {
     app.add_system(handle_input_from_keyboard.before(handle_websocket_client));
     app.add_system(handle_input_event.before(handle_input_from_keyboard));
     app.add_system(handle_update_event.after(handle_input_event));
-    app.add_system(
-        handle_update_for_moveable
-            .after(handle_update_event)
-            .with_run_criteria(FixedTimestep::step(TIME_STEP as f64)),
-    );
+    app.add_system(handle_update_for_moveable.after(handle_update_event));
 
     let _ = RapierDebugRenderPlugin::default();
     let _ = WorldInspectorPlugin::new();

@@ -9,4 +9,6 @@ pub struct Game {
     pub local_player_uuid: Option<Uuid>,
     pub player_uuids: HashSet<Uuid>,
     pub last_update: f64,
+    pub server_time_at_join: f64,
+    pub client_time_at_join: f64,
 }
