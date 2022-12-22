@@ -1,6 +1,7 @@
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::log::trace;
 use bevy::prelude::{App, IntoSystemDescriptor};
+use bevy::time::FixedTimestep;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::RapierDebugRenderPlugin;
 
@@ -12,6 +13,7 @@ use crate::base::rollover::handle_rollover_for_moveable;
 use crate::behaviour::collideable::handle_rapier_collision_event;
 use crate::behaviour::expireable::handle_expireable;
 use crate::behaviour::weaponized::handle_fire_event;
+use crate::constants::TIME_STEP;
 use crate::server::collision::handle_collision_event;
 use crate::server::despawn::handle_despawn_event;
 use crate::server::input::{handle_input_event, handle_input_for_player};
@@ -56,9 +58,21 @@ pub fn get_app_for_server() -> App {
 
     // game input / update handlers
     app.add_system(handle_input_event.after(handle_websocket_server));
-    app.add_system(handle_input_for_player.after(handle_input_event));
-    app.add_system(handle_rollover_for_moveable.before(handle_update_for_moveable));
-    app.add_system(handle_update_for_moveable.after(handle_input_for_player));
+    app.add_system(
+        handle_input_for_player
+            .after(handle_input_event)
+            .with_run_criteria(FixedTimestep::step(TIME_STEP as f64)),
+    );
+    app.add_system(
+        handle_rollover_for_moveable
+            .before(handle_update_for_moveable)
+            .with_run_criteria(FixedTimestep::step(TIME_STEP as f64)),
+    );
+    app.add_system(
+        handle_update_for_moveable
+            .after(handle_input_for_player)
+            .with_run_criteria(FixedTimestep::step(TIME_STEP as f64)),
+    );
     app.add_system(handle_update_event.after(handle_update_for_moveable));
     app.add_system(handle_fire_event.after(handle_update_event));
     app.add_system(handle_rapier_collision_event.after(handle_fire_event));

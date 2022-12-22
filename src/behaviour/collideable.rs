@@ -145,7 +145,7 @@ pub fn handle_collision_event(
 
         transform_a.rotation = Quat::default();
 
-        for i in 0..8 {
+        for i in 0..4 {
             transform_a.rotation =
                 Quat::from_rotation_z(f32::to_radians((DEGREES_MAX / 8 as f32) * i as f32));
 
@@ -156,7 +156,7 @@ pub fn handle_collision_event(
                 .mul_vec3(Vec3::new(ZERO, PARTICLE_LINEAR_VELOCITY, ZERO))
                 .truncate();
 
-            let mut color = Color::CYAN;
+            let mut color = Color::WHITE;
 
             if collision.collider_a.entity_type == "player" || collision.collider_b.entity_type == "player" {
                 color = *vec![Color::YELLOW, Color::ORANGE, Color::ORANGE_RED, Color::RED]
