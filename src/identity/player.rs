@@ -5,14 +5,15 @@ use bevy::prelude::{
     default, shape, Color, ColorMaterial, Commands, Component, DespawnRecursiveExt, Entity, Mesh, Query, Res,
     ResMut, Time, Transform,
 };
-use bevy::reflect::Uuid;
 use bevy::sprite::MaterialMesh2dBundle;
+use bevy::utils::Uuid;
 use bevy_rapier2d::dynamics::RigidBody::Dynamic;
 use bevy_rapier2d::dynamics::{Ccd, Damping, Sleeping};
 use bevy_rapier2d::geometry::{ActiveEvents, Collider, ColliderMassProperties, Friction, Restitution};
 use bevy_rapier2d::prelude::Velocity;
 use serde::{Deserialize, Serialize};
 
+use crate::behaviour::collideable::Collideable;
 use crate::behaviour::moveable::Moveable;
 use crate::behaviour::weaponized::Weaponized;
 use crate::client::error::{QuatEMA, Vec2EMA, Vec3EMA, EMA};
@@ -97,17 +98,28 @@ pub fn spawn_player(
         had_rollover: false,
     };
 
+    let collideable = Collideable {
+        entity_uuid: player_uuid,
+    };
+
     let mut parent: EntityCommands;
 
     if is_local_player {
-        parent = commands.spawn((material_mesh, player, moveable, Local {}));
+        parent = commands.spawn((material_mesh, player, moveable, collideable, Local {}));
     } else {
         let weaponized = Weaponized {
             weapon_uuid: Uuid::new_v4(),
             last_fired_at: 0.0,
         };
 
-        parent = commands.spawn((material_mesh, player, moveable, weaponized, Remote {}));
+        parent = commands.spawn((
+            material_mesh,
+            player,
+            moveable,
+            weaponized,
+            collideable,
+            Remote {},
+        ));
     }
 
     parent
@@ -141,6 +153,6 @@ pub fn despawn_player(
             continue;
         }
 
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }

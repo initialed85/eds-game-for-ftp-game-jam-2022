@@ -8,8 +8,10 @@ use crate::base::network::{
     base_handle_close_event, base_handle_incoming_message_event, base_handle_open_event,
 };
 use crate::base::rollover::handle_rollover_for_moveable;
+use crate::behaviour::collideable::handle_rapier_collision_event;
 use crate::behaviour::expireable::handle_expireable;
 use crate::behaviour::weaponized::handle_fire_event;
+use crate::server::collision::handle_collision_event;
 use crate::server::despawn::handle_despawn_event;
 use crate::server::input::{handle_input_event, handle_input_for_player};
 use crate::server::join::handle_join_event;
@@ -58,7 +60,9 @@ pub fn get_app_for_server() -> App {
     app.add_system(handle_update_for_moveable.after(handle_input_for_player));
     app.add_system(handle_update_event.after(handle_update_for_moveable));
     app.add_system(handle_fire_event.after(handle_update_event));
-    app.add_system(handle_expireable.after(handle_fire_event));
+    app.add_system(handle_rapier_collision_event.after(handle_fire_event));
+    app.add_system(handle_collision_event.after(handle_rapier_collision_event));
+    app.add_system(handle_expireable.after(handle_collision_event));
 
     let _ = RapierDebugRenderPlugin::default();
     let _ = WorldInspectorPlugin::new();

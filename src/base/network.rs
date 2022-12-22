@@ -1,6 +1,7 @@
 use bevy::prelude::{EventReader, EventWriter};
 
 use crate::base::helpers::deserialize;
+use crate::behaviour::collideable::Collision;
 use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
 use crate::types::network::{Close, Container, IncomingMessage, Open};
 
@@ -18,6 +19,7 @@ pub fn base_handle_incoming_message_event(
     mut update_event_writer: EventWriter<Update>,
     mut leave_event_writer: EventWriter<Leave>,
     mut despawn_event_writer: EventWriter<Despawn>,
+    mut collision_event_writer: EventWriter<Collision>,
 ) {
     for incoming_message_event in incoming_message_event_reader.iter() {
         let container = deserialize::<Container>(incoming_message_event.message.clone());
@@ -34,6 +36,8 @@ pub fn base_handle_incoming_message_event(
             leave_event_writer.send(container.leave.unwrap());
         } else if container.message_type == "despawn" {
             despawn_event_writer.send(container.despawn.unwrap());
+        } else if container.message_type == "collision" {
+            collision_event_writer.send(container.collision.unwrap());
         }
     }
 }

@@ -1,5 +1,5 @@
 use bevy::prelude::Component;
-use bevy::reflect::Uuid;
+use bevy::utils::Uuid;
 use serde::{Deserialize, Serialize};
 
 use crate::client::error::{QuatEMA, Vec2EMA, Vec3EMA, EMA};

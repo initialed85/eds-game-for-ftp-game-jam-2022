@@ -17,6 +17,7 @@ pub fn handle_spawn_event(
             input: None,
             despawn: None,
             leave: None,
+            collision: None,
         });
 
         // tell everyone to spawn the entity

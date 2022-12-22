@@ -27,6 +27,7 @@ pub fn handle_leave_event(
                 update: None,
                 despawn: None,
                 leave: Some(leave_event.clone()),
+                collision: None,
             }),
         });
     }

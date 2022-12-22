@@ -22,6 +22,7 @@ pub fn handle_update_event(
                 update: Some(update.clone()),
                 despawn: None,
                 leave: None,
+                collision: None,
             }),
         })
     }

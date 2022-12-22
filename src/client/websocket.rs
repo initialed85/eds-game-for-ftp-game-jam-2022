@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use bevy::reflect::Uuid;
+use bevy::utils::Uuid;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::{window, BinaryType, ErrorEvent, Location, MessageEvent, WebSocket};

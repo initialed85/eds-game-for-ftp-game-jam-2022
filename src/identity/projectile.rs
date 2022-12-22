@@ -5,13 +5,14 @@ use bevy::prelude::{
     default, shape, Color, ColorMaterial, Commands, Component, DespawnRecursiveExt, Entity, Mesh, Query, Res,
     ResMut, Time, Transform,
 };
-use bevy::reflect::Uuid;
 use bevy::sprite::MaterialMesh2dBundle;
+use bevy::utils::Uuid;
 use bevy_rapier2d::dynamics::RigidBody::Dynamic;
 use bevy_rapier2d::dynamics::{Ccd, Sleeping, Velocity};
 use bevy_rapier2d::geometry::{ActiveEvents, Collider, ColliderMassProperties, Friction, Restitution};
 use serde::{Deserialize, Serialize};
 
+use crate::behaviour::collideable::Collideable;
 use crate::behaviour::expireable::Expireable;
 use crate::behaviour::moveable::Moveable;
 use crate::client::error::{QuatEMA, Vec2EMA, Vec3EMA, EMA};
@@ -88,12 +89,17 @@ pub fn spawn_projectile(
         had_rollover: false,
     };
 
+    let collideable = Collideable {
+        entity_uuid: projectile_uuid,
+    };
+
     let expireable = Expireable {
         entity_uuid: projectile_uuid,
         expires_at: time.elapsed_seconds_f64() + PROJECTILE_EXPIRY_SECONDS,
     };
 
-    let mut parent: EntityCommands = commands.spawn((material_mesh, projectile, moveable, expireable));
+    let mut parent: EntityCommands =
+        commands.spawn((material_mesh, projectile, moveable, collideable, expireable));
 
     parent
         .insert(Dynamic)
@@ -125,6 +131,6 @@ pub fn despawn_projectile(
             continue;
         }
 
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }

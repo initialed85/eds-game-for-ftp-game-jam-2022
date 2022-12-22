@@ -1,26 +1,26 @@
 use bevy::prelude::{EventReader, EventWriter};
 
 use crate::base::helpers::serialize;
-use crate::types::event::Despawn;
+use crate::behaviour::collideable::Collision;
 use crate::types::network::{Container, OutgoingMessage};
 
-pub fn handle_despawn_event(
-    mut despawn_event_reader: EventReader<Despawn>,
+pub fn handle_collision_event(
+    mut collision_event_reader: EventReader<Collision>,
     mut outgoing_message_event_writer: EventWriter<OutgoingMessage>,
 ) {
-    for despawn_event in despawn_event_reader.iter() {
+    for collision_event in collision_event_reader.iter() {
         let message = serialize(Container {
-            message_type: "despawn".to_string(),
+            message_type: "collision".to_string(),
             join: None,
             spawn: None,
-            input: None,
             update: None,
-            despawn: Some(despawn_event.clone()),
+            input: None,
+            despawn: None,
             leave: None,
-            collision: None,
+            collision: Some(collision_event.clone()),
         });
 
-        // tell everyone to despawn the entity
+        // tell everyone to about the collision
         outgoing_message_event_writer.send(OutgoingMessage {
             session_uuid: None,
             not_session_uuid: None,

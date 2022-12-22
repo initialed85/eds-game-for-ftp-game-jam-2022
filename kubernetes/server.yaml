@@ -1,0 +1,71 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: eds-game-for-ftp-game-jam-2022
+  name: server-config-map
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: eds-game-for-ftp-game-jam-2022
+  name: server-deployment
+  labels:
+    app: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+        - name: server
+          image: kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest
+          env:
+            - name: DISPLAY
+              value: "xvfb:0"
+          ports:
+            - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server
+  namespace: eds-game-for-ftp-game-jam-2022
+spec:
+  selector:
+    app: server
+  ports:
+    - name: server
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  namespace: eds-game-for-ftp-game-jam-2022
+  name: server-middleware-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - ws
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: eds-game-for-ftp-game-jam-2022
+  name: server-ingressroute
+spec:
+  routes:
+    - match: HostRegexp(`{subdomain:eds-game-for-ftp-game-jam-2022}.{any:.*}`) && PathPrefix(`ws`)
+      kind: Rule
+      middlewares:
+        - name: server-middleware-stripprefix
+      services:
+        - name: server
+          port: 8080

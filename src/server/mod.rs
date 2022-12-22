@@ -1,4 +1,5 @@
 pub mod app;
+pub mod collision;
 pub mod despawn;
 pub mod input;
 pub mod join;

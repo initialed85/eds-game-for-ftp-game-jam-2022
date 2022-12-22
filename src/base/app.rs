@@ -20,9 +20,13 @@ use crate::base::network::{
 };
 use crate::base::setup::base_handle_setup;
 use crate::base::spawn::base_handle_spawn_event;
+use crate::behaviour::collideable::handle_collision_event;
+use crate::behaviour::collideable::Collision;
+use crate::behaviour::expireable::handle_expireable;
 use crate::behaviour::weaponized::Fire;
 use crate::constants::{BACKGROUND_COLOR, BOUNDS, PIXELS_PER_METER, TIME_STEP, TITLE};
 use crate::identity::game::Game;
+use crate::identity::particle::handle_particle;
 use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
 use crate::types::network::{Close, IncomingMessage, Open, OutgoingMessage};
 
@@ -79,6 +83,7 @@ pub fn get_base_app() -> App {
     app.add_event::<Despawn>();
     app.add_event::<Leave>();
     app.add_event::<Fire>();
+    app.add_event::<Collision>();
 
     // network handlers
     app.add_system(base_handle_open_event);
@@ -89,6 +94,9 @@ pub fn get_base_app() -> App {
     app.add_system(base_handle_join_event.after(base_handle_incoming_message_event));
     app.add_system(base_handle_spawn_event.after(base_handle_join_event));
     app.add_system(base_handle_leave_event.after(base_handle_spawn_event));
+    app.add_system(handle_collision_event.after(base_handle_spawn_event));
+    app.add_system(handle_particle.after(handle_collision_event));
+    app.add_system(handle_expireable.after(handle_collision_event));
     app.add_system(base_handle_despawn_event.after(base_handle_leave_event));
 
     trace!("base.get_app(); returning app={:?}", app);

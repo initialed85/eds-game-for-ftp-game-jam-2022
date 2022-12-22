@@ -3,6 +3,7 @@ use bevy::prelude::{ColorMaterial, Commands, EventReader, Mesh, Query, Res, ResM
 
 use crate::identity::entity::spawn_entity;
 use crate::identity::game::Game;
+use crate::identity::particle::Particle;
 use crate::identity::player::Player;
 use crate::identity::projectile::Projectile;
 use crate::types::event::Spawn;
@@ -12,6 +13,7 @@ pub fn base_handle_spawn_event(
     game: Res<Game>,
     player_query: Query<&Player>,
     projectile_query: Query<&Projectile>,
+    particle_query: Query<&Particle>,
     time: Res<Time>,
     mut meshes: ResMut<'_, Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -23,6 +25,7 @@ pub fn base_handle_spawn_event(
             &game,
             &player_query,
             &projectile_query,
+            &particle_query,
             time.clone(),
             &mut meshes,
             &mut materials,

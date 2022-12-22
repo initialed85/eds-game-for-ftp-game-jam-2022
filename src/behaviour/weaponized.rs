@@ -1,5 +1,5 @@
 use bevy::math::Vec3;
-use bevy::prelude::{trace, Color, Component, EventReader, EventWriter, Query, Res, Time, Transform};
+use bevy::prelude::{Color, Component, EventReader, EventWriter, Query, Res, Time, Transform};
 use bevy::utils::Uuid;
 use bevy_rapier2d::prelude::Velocity;
 use serde::{Deserialize, Serialize};
@@ -65,7 +65,7 @@ pub fn handle_fire_event(
                 entity_type: "projectile".to_string(),
                 transform: Some(SerializableTransform::from_transform(projectile_transform)),
                 velocity: Some(SerializableVelocity::from_velocity(projectile_velocity)),
-                color: Some(Color::ANTIQUE_WHITE),
+                color: Some(Color::CYAN),
             });
 
             weapon.last_fired_at = time.elapsed_seconds_f64();

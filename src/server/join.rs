@@ -28,6 +28,7 @@ pub fn handle_join_event(
                 update: None,
                 despawn: None,
                 leave: None,
+                collision: None,
             }),
         });
 
@@ -45,6 +46,7 @@ pub fn handle_join_event(
                 update: None,
                 despawn: None,
                 leave: None,
+                collision: None,
             }),
         });
 

@@ -72,6 +72,7 @@ pub fn handle_input_event(
                 update: None,
                 despawn: None,
                 leave: None,
+                collision: None,
             }),
         };
 

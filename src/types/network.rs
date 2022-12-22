@@ -1,6 +1,7 @@
 use bevy::utils::Uuid;
 use serde::{Deserialize, Serialize};
 
+use crate::behaviour::collideable::Collision;
 use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
 
 //
@@ -37,11 +38,12 @@ pub struct Close {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Container {
     pub message_type: String,
-    // one of "join", "spawn", "input", "update", "despawn", "leave"
+    // one of "join", "spawn", "input", "update", "despawn", "leave", "collision"
     pub join: Option<Join>,
     pub spawn: Option<Spawn>,
     pub input: Option<Input>,
     pub update: Option<Update>,
     pub despawn: Option<Despawn>,
     pub leave: Option<Leave>,
+    pub collision: Option<Collision>,
 }
