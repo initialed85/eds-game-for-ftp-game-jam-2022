@@ -11,14 +11,14 @@ docker build \
   -f client/Dockerfile \
   . &
 docker build \
-  -t kube-registry:5000/eds-game-for-ftp-game-jam-2022-proxy:latest \
-  -f proxy/Dockerfile \
+  -t kube-registry:5000/eds-game-for-ftp-game-jam-2022-xvfb:latest \
+  -f xvfb/Dockerfile \
   . &
 
 wait
 
 docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest &
 docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-client:latest &
-docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-proxy:latest &
+docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-xvfb:latest &
 
 wait
