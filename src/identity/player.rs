@@ -128,11 +128,11 @@ pub fn spawn_player(
     parent
         .insert(Dynamic)
         .insert(Sleeping::disabled())
+        .insert(velocity.clone())
         .insert(Damping {
             linear_damping: PLAYER_LINEAR_DAMPING,
             angular_damping: PLAYER_ANGULAR_DAMPING,
-        })
-        .insert(velocity.clone());
+        });
 
     if game.role == "server" {
         parent

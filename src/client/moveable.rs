@@ -57,6 +57,7 @@ pub fn handle_update_for_moveable(
                 let old_translation_error = moveable.translation_error.get_value();
                 let new_translation = transform.translation.clone() + old_translation_error;
                 transform.translation = new_translation;
+
                 let new_translation_error = update_transform.translation - new_translation;
                 moveable
                     .translation_error
@@ -66,15 +67,16 @@ pub fn handle_update_for_moveable(
                 let old_rotation_error = moveable.rotation_error.get_value();
                 let new_rotation = transform.rotation * old_rotation_error;
                 transform.rotation = new_rotation;
+
                 let new_rotation_error = update_transform.rotation * new_rotation.inverse();
                 moveable
                     .rotation_error
                     .add_value(time.clone(), new_rotation_error);
 
                 if game.local_player_uuid.is_some() && game.local_player_uuid.unwrap() == update.entity_uuid {
-                    screen_print!("translation_error={:?}", new_translation_error);
+                    screen_print!("translation_error={:?}", moveable.translation_error.get_value());
                     screen_print!("translation={:?}", transform.translation);
-                    screen_print!("rotation_error={:?}", new_rotation_error);
+                    screen_print!("rotation_error={:?}", moveable.rotation_error.get_value());
                     screen_print!("rotation={:?}", transform.rotation);
                 }
             } else {
@@ -95,21 +97,24 @@ pub fn handle_update_for_moveable(
             let old_linvel_error = moveable.linvel_error.get_value();
             let new_linvel = velocity.linvel.clone() + old_linvel_error;
             velocity.linvel = new_linvel;
+
             let new_linvel_error = update_velocity.linvel - new_linvel;
             moveable.linvel_error.add_value(time.clone(), new_linvel_error);
 
             let old_angvel_error = moveable.angvel_error.get_value();
             let new_angvel = velocity.angvel.clone() as f64 + old_angvel_error;
             velocity.angvel = new_angvel as f32;
+
             let new_angvel_error = update_velocity.angvel - new_angvel as f32;
             moveable
                 .angvel_error
                 .add_value(time.clone(), new_angvel_error as f64);
+
             if game.local_player_uuid.is_some() && game.local_player_uuid.unwrap() == update.entity_uuid {
                 screen_print!("linvel={:?}", velocity.linvel);
-                screen_print!("linvel_error={:?}", new_linvel_error);
+                screen_print!("linvel_error={:?}", moveable.linvel_error.get_value());
                 screen_print!("angvel={:?}", velocity.angvel);
-                screen_print!("angvel_error={:?}", new_angvel_error);
+                screen_print!("angvel_error={:?}", moveable.angvel_error.get_value());
             }
         }
 
