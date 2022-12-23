@@ -13,7 +13,8 @@ pub const RADIANS_TO_DEGREES: f32 = 180.0 / PI;
 pub const TITLE: &str = "eds-game-for-ftp-game-jam-2022";
 pub const BOUNDS: Vec2 = Vec2::new(640.0, 400.0);
 pub const PIXELS_PER_METER: f32 = 1.0;
-pub const TIME_STEP: f64 = 1.0 / 60.0;
+pub const BASE_TIME_STEP: f64 = 1.0 / 60.0;
+pub const BASE_TIME_STEP_NAME: &str = "base_time_step";
 pub const BACKGROUND_COLOR: Color = Color::DARK_GRAY;
 
 // server
@@ -42,6 +43,7 @@ pub const PLAYER_FIRE_KEY: KeyCode = KeyCode::LAlt;
 pub const PLAYER_ANGULAR_VELOCITY_MAX: f32 = 10.0 / 3.0;
 pub const PLAYER_ANGULAR_VELOCITY_STEP: f32 = 1.0 / 3.0;
 pub const PLAYER_LINEAR_VELOCITY_MAX: f32 = (10.0 / 3.0) * 2.0;
+pub const PLAYER_NETWORK_TIME_STEP: f64 = 1.0 / 60.0;
 pub const PLAYER_NETWORK_UPDATE_RATE_SECONDS: f64 = 1.0 / 15.0;
 pub const PLAYER_NETWORK_EMA_SMOOTHING_FACTOR: f64 = 0.99;
 

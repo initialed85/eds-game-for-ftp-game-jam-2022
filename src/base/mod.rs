@@ -4,6 +4,6 @@ pub mod helpers;
 pub mod join;
 pub mod leave;
 pub mod network;
+pub mod rollover;
 pub mod setup;
 pub mod spawn;
-pub mod rollover;

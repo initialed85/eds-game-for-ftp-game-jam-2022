@@ -4,6 +4,7 @@ pub mod despawn;
 pub mod input;
 pub mod join;
 pub mod leave;
+pub mod moveable;
 pub mod network;
 pub mod setup;
 pub mod spawn;

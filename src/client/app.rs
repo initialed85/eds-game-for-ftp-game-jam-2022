@@ -3,6 +3,7 @@ use bevy::log::trace;
 use bevy::prelude::{App, IntoSystemDescriptor};
 use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::RapierDebugRenderPlugin;
+use iyes_loopless::prelude::AppLooplessFixedTimestepExt;
 
 use crate::base::app::get_base_app;
 use crate::base::network::{
@@ -13,6 +14,7 @@ use crate::client::network::handle_websocket_client;
 use crate::client::setup::handle_setup;
 use crate::client::update::{handle_update_event, handle_update_for_moveable};
 use crate::client::websocket::get_websocket_client;
+use crate::constants::BASE_TIME_STEP_NAME;
 
 pub fn get_app_for_client() -> App {
     let mut app = get_base_app();
@@ -26,10 +28,10 @@ pub fn get_app_for_client() -> App {
 
     app.add_startup_system(handle_setup);
 
-    // the client side of the WebSocket
+    // the client side implementation of the WebSocket
     app.insert_non_send_resource(web_socket_client);
 
-    // network handlers
+    // handler to wire the network implemention into the network events
     app.add_system(
         handle_websocket_client
             .before(base_handle_open_event)
@@ -37,11 +39,21 @@ pub fn get_app_for_client() -> App {
             .before(base_handle_close_event),
     );
 
-    // gane input / update handlers
-    app.add_system(handle_input_from_keyboard.before(handle_websocket_client));
-    app.add_system(handle_input_event.before(handle_input_from_keyboard));
-    app.add_system(handle_update_event.after(handle_input_event));
-    app.add_system(handle_update_for_moveable.after(handle_update_event));
+    // handlers to wire game update event into game state
+    app.add_system(handle_update_event.after(handle_websocket_client));
+
+    // handler to wire raw input event into game input event
+    app.add_system(handle_input_from_keyboard.after(handle_update_event));
+
+    // handler to wire game input event into network input event
+    app.add_system(handle_input_event.after(handle_input_from_keyboard));
+
+    // handlers to calculate game state per time step
+    app.add_fixed_timestep_system(
+        BASE_TIME_STEP_NAME,
+        0,
+        handle_update_for_moveable.after(handle_update_event),
+    );
 
     let _ = RapierDebugRenderPlugin::default();
     let _ = WorldInspectorPlugin::new();

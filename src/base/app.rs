@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::time::Duration;
 
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::log::LogPlugin;
@@ -7,12 +8,12 @@ use bevy::prelude::{
     default, trace, App, ClearColor, IntoSystemDescriptor, PluginGroup, SystemSet, WindowDescriptor,
     WindowPlugin,
 };
-use bevy::time::FixedTimestep;
 use bevy::window::PresentMode;
 use bevy::window::WindowPosition::At;
 use bevy::DefaultPlugins;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
+use iyes_loopless::prelude::AppLooplessFixedTimestepExt;
 
 use crate::base::despawn::base_handle_despawn_event;
 use crate::base::join::base_handle_join_event;
@@ -26,7 +27,9 @@ use crate::behaviour::collideable::handle_collision_event;
 use crate::behaviour::collideable::Collision;
 use crate::behaviour::expireable::handle_expireable;
 use crate::behaviour::weaponized::Fire;
-use crate::constants::{BACKGROUND_COLOR, BOUNDS, PIXELS_PER_METER, TIME_STEP, TITLE};
+use crate::constants::{
+    BACKGROUND_COLOR, BASE_TIME_STEP, BASE_TIME_STEP_NAME, BOUNDS, PIXELS_PER_METER, TITLE,
+};
 use crate::identity::game::Game;
 use crate::identity::particle::handle_particle;
 use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
@@ -58,7 +61,12 @@ pub fn get_base_app() -> App {
         PIXELS_PER_METER,
     ));
 
-    app.add_system_set(SystemSet::default().with_run_criteria(FixedTimestep::step(TIME_STEP as f64)));
+    app.add_fixed_timestep(
+        Duration::from_secs_f64(BASE_TIME_STEP as f64),
+        BASE_TIME_STEP_NAME,
+    );
+
+    app.add_fixed_timestep_system_set(BASE_TIME_STEP_NAME, 0, SystemSet::default());
 
     app.insert_resource(ClearColor(BACKGROUND_COLOR));
 
@@ -89,19 +97,29 @@ pub fn get_base_app() -> App {
     app.add_event::<Fire>();
     app.add_event::<Collision>();
 
-    // network handlers
+    // handlers to wire network events into game events
     app.add_system(base_handle_open_event);
     app.add_system(base_handle_incoming_message_event);
     app.add_system(base_handle_close_event);
 
-    // game lifecycle handlers
+    // handlers to wire game events into game state
     app.add_system(base_handle_join_event.after(base_handle_incoming_message_event));
     app.add_system(base_handle_spawn_event.after(base_handle_join_event));
     app.add_system(base_handle_leave_event.after(base_handle_spawn_event));
     app.add_system(handle_collision_event.after(base_handle_spawn_event));
-    app.add_system(handle_particle.after(handle_collision_event));
-    app.add_system(handle_expireable.after(handle_collision_event));
     app.add_system(base_handle_despawn_event.after(base_handle_leave_event));
+
+    // handlers to calculate game state per time step
+    app.add_fixed_timestep_system(
+        BASE_TIME_STEP_NAME,
+        0,
+        handle_particle.after(handle_collision_event),
+    );
+    app.add_fixed_timestep_system(
+        BASE_TIME_STEP_NAME,
+        0,
+        handle_expireable.after(handle_collision_event),
+    );
 
     let _ = RapierDebugRenderPlugin::default();
     let _ = WorldInspectorPlugin::new();
