@@ -238,6 +238,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy-debug-text-overlay"
+version = "4.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b7e65e2ddf9894c5fc943215136f7d4177ff095fe4efd370f4184c212a96d4b"
+dependencies = [
+ "bevy",
+ "lazy_static",
+]
+
+[[package]]
 name = "bevy-inspector-egui"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1472,6 +1482,7 @@ name = "eds-game-for-ftp-game-jam-2022"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-debug-text-overlay",
  "bevy-inspector-egui",
  "bevy_prototype_debug_lines",
  "bevy_rapier2d",
