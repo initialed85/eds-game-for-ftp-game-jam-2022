@@ -32,6 +32,7 @@ pub struct Player {
     pub player_uuid: Uuid,
     pub color: Color,
     pub is_local_player: bool,
+    pub unhandled_inputs: Vec<Input>,
     pub last_input: Option<Input>,
 }
 
@@ -83,6 +84,7 @@ pub fn spawn_player(
         player_uuid,
         color,
         is_local_player,
+        unhandled_inputs: vec![],
         last_input: None,
     };
 
