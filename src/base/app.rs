@@ -11,6 +11,7 @@ use bevy::prelude::{
 use bevy::window::PresentMode;
 use bevy::window::WindowPosition::At;
 use bevy::DefaultPlugins;
+use bevy_debug_text_overlay::OverlayPlugin;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
 use iyes_loopless::prelude::AppLooplessFixedTimestepExt;
@@ -45,8 +46,8 @@ pub fn get_base_app() -> App {
                     title: TITLE.to_string(),
                     width: BOUNDS.x,
                     height: BOUNDS.y,
-                    present_mode: PresentMode::AutoVsync,
-                    position: At(Vec2::new(0.0, 50.0)),
+                    present_mode: PresentMode::Fifo,
+                    position: At(Vec2::new(0.0, 0.0)),
                     ..default()
                 },
                 ..default()
@@ -56,6 +57,11 @@ pub fn get_base_app() -> App {
                 level: bevy::log::Level::INFO,
             }),
     );
+
+    app.add_plugin(OverlayPlugin {
+        font_size: 10.0,
+        ..default()
+    });
 
     app.add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
         PIXELS_PER_METER,

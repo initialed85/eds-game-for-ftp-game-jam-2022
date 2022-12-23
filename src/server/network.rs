@@ -105,7 +105,7 @@ pub fn handle_open_event(
         join_event_writer.send(Join {
             player_uuid: open_event.session_uuid,
             is_for_local_player: true,
-            server_time_at_join: time.elapsed_seconds_f64(),
+            server_time: time.elapsed_seconds_f64(),
         });
     }
 }

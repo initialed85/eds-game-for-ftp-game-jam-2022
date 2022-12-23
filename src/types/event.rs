@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 pub struct Join {
     pub player_uuid: Uuid,
     pub is_for_local_player: bool,
-    pub server_time_at_join: f64,
+    pub server_time: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -88,6 +88,8 @@ pub struct Input {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Update {
     pub entity_uuid: Uuid,
+    pub server_time: f64,
+    pub client_time: f64,
     pub transform: Option<SerializableTransform>,
     pub velocity: Option<SerializableVelocity>,
     pub includes_rollover: bool,

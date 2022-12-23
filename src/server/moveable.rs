@@ -16,6 +16,8 @@ pub fn handle_update_for_moveable(
 
         let update = Update {
             entity_uuid: moveable.entity_uuid,
+            server_time: time.elapsed_seconds_f64(),
+            client_time: 0.0,
             transform: Some(SerializableTransform::from_transform(transform.clone())),
             velocity: Some(SerializableVelocity::from_velocity(velocity.clone())),
             handled_at: None,

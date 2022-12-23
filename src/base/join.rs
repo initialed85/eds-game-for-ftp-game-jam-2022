@@ -19,7 +19,7 @@ pub fn base_handle_join_event(
 
         if join.is_for_local_player {
             game.local_player_uuid = Some(join.player_uuid);
-            game.server_time_at_join = join.server_time_at_join;
+            game.server_time_at_join = join.server_time;
             game.client_time_at_join = time.elapsed_seconds_f64();
         }
 
