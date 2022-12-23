@@ -89,7 +89,6 @@ pub struct Input {
 pub struct Update {
     pub entity_uuid: Uuid,
     pub server_time: f64,
-    pub client_time: f64,
     pub transform: Option<SerializableTransform>,
     pub velocity: Option<SerializableVelocity>,
     pub includes_rollover: bool,

@@ -10,9 +10,10 @@ use crate::base::network::{
     base_handle_close_event, base_handle_incoming_message_event, base_handle_open_event,
 };
 use crate::client::input::{handle_input_event, handle_input_from_keyboard};
+use crate::client::moveable::handle_update_for_moveable;
 use crate::client::network::handle_websocket_client;
 use crate::client::setup::handle_setup;
-use crate::client::update::{handle_update_event, handle_update_for_moveable};
+use crate::client::update::handle_update_event;
 use crate::client::websocket::get_websocket_client;
 use crate::constants::BASE_TIME_STEP_NAME;
 

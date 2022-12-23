@@ -79,7 +79,8 @@ pub fn spawn_projectile(
 
     let moveable = Moveable {
         entity_uuid: projectile_uuid,
-        last_update: None,
+        unhandled_updates: vec![],
+        update_to_handle: None,
         translation_error: Vec3EMA::new(PROJECTILE_NETWORK_EMA_SMOOTHING_FACTOR),
         rotation_error: QuatEMA::new(PROJECTILE_NETWORK_EMA_SMOOTHING_FACTOR),
         linvel_error: Vec2EMA::new(PROJECTILE_NETWORK_EMA_SMOOTHING_FACTOR),

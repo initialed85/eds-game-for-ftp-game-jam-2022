@@ -88,7 +88,8 @@ pub fn spawn_player(
 
     let moveable = Moveable {
         entity_uuid: player_uuid,
-        last_update: None,
+        unhandled_updates: vec![],
+        update_to_handle: None,
         translation_error: Vec3EMA::new(PLAYER_NETWORK_EMA_SMOOTHING_FACTOR),
         rotation_error: QuatEMA::new(PLAYER_NETWORK_EMA_SMOOTHING_FACTOR),
         linvel_error: Vec2EMA::new(PLAYER_NETWORK_EMA_SMOOTHING_FACTOR),
