@@ -20,7 +20,7 @@ RUN \
     --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/srv/target \
     cargo build --target wasm32-unknown-unknown --bin client --features client --profile release && \
-    mv ./target/wasm32-unknown-unknown/debug/client.wasm ./client.wasm
+    mv ./target/wasm32-unknown-unknown/release/client.wasm ./client.wasm
 
 FROM base AS extractor
 

@@ -44,7 +44,7 @@ RUN \
     --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/srv/target \
     cargo build --target x86_64-unknown-linux-gnu --bin server --features server --profile release && \
-    mv ./target/x86_64-unknown-linux-gnu/debug/server ./server
+    mv ./target/x86_64-unknown-linux-gnu/release/server ./server
 
 FROM base AS runner
 
