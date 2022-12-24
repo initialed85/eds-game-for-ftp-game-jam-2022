@@ -9,7 +9,9 @@ use crate::base::app::get_base_app;
 use crate::base::network::{
     base_handle_close_event, base_handle_incoming_message_event, base_handle_open_event,
 };
-use crate::client::input::{handle_input_event, handle_input_from_keyboard};
+use crate::client::input::{
+    handle_input_event, handle_input_from_button, handle_input_from_keyboard, ButtonState,
+};
 use crate::client::moveable::handle_update_for_moveable;
 use crate::client::network::handle_websocket_client;
 use crate::client::setup::handle_setup;
@@ -26,6 +28,11 @@ pub fn get_app_for_client() -> App {
         "client.get_app(); created web_socket_client={:?}",
         web_socket_client
     );
+
+    app.insert_resource(ButtonState {
+        is_bottom_left_pressed: false,
+        is_bottom_right_pressed: false,
+    });
 
     app.add_startup_system(handle_setup);
 
@@ -45,6 +52,7 @@ pub fn get_app_for_client() -> App {
 
     // handler to wire raw input event into game input event
     app.add_system(handle_input_from_keyboard.after(handle_update_event));
+    app.add_system(handle_input_from_button.after(handle_update_event));
 
     // handler to wire game input event into network input event
     app.add_system(handle_input_event.after(handle_input_from_keyboard));

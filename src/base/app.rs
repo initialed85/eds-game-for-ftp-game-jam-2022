@@ -135,8 +135,8 @@ pub fn get_base_app() -> App {
     // TODO: debugging related
     // app.add_plugin(RapierDebugRenderPlugin::default());
     // app.add_plugin(WorldInspectorPlugin::new());
-    app.add_plugin(LogDiagnosticsPlugin::default());
-    app.add_plugin(FrameTimeDiagnosticsPlugin::default());
+    // app.add_plugin(LogDiagnosticsPlugin::default());
+    // app.add_plugin(FrameTimeDiagnosticsPlugin::default());
 
     trace!("base.get_app(); returning app={:?}", app);
 

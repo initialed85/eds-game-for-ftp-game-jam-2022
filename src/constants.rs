@@ -61,3 +61,14 @@ pub const PARTICLE_CHANGE_RATE_SECONDS: f64 = 0.05;
 pub const PARTICLE_DIMENSION_MULTIPLIER: f32 = 1.0 / 4.0;
 pub const PARTICLE_LINEAR_VELOCITY: f32 = 1000.0 / 3.0;
 pub const PARTICLE_LINEAR_VELOCITY_CHANGE: f32 = 50.0;
+
+// ui
+pub const UI_BUTTON_WIDTH: f32 = 100.0;
+pub const UI_BUTTON_HEIGHT: f32 = 50.0;
+pub const UI_BUTTON_BOTTOM_LEFT_LEFT: f32 = 10.0;
+pub const UI_BUTTON_BOTTOM_LEFT_TOP: f32 = BOUNDS.y - (10.0 + UI_BUTTON_HEIGHT);
+pub const UI_BUTTON_BOTTOM_RIGHT_LEFT: f32 = BOUNDS.x - (10.0 + UI_BUTTON_WIDTH);
+pub const UI_BUTTON_BOTTOM_RIGHT_TOP: f32 = BOUNDS.y - (10.0 + UI_BUTTON_HEIGHT);
+pub const UI_BUTTON_NORMAL: Color = Color::rgb(0.15, 0.15, 0.15);
+pub const UI_BUTTON_HOVERED: Color = Color::rgb(0.25, 0.25, 0.25);
+pub const UI_BUTTON_PRESSED: Color = Color::rgb(0.35, 0.75, 0.35);

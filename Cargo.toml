@@ -24,6 +24,7 @@ bevy-debug-text-overlay = "4.0.1"
 [features]
 server = ["ctrlc"]
 client = []
+scratch = []
 
 [dependencies.web-sys]
 version = "0.3.22"
@@ -36,7 +37,8 @@ features = [
     "ProgressEvent",
     "WebSocket",
     "Location",
-    "Window"
+    "Window",
+    "TouchEvent"
 ]
 
 [profile.dev]
