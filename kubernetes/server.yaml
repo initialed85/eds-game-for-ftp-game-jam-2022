@@ -23,17 +23,12 @@ spec:
         app: server
     spec:
       nodeSelector:
-        gpu: "yes"
         home-role: "storage"
-      runtimeClassName: nvidia
+        gpu: "no"
       containers:
         - name: server
           image: kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest
           env:
-            - name: NVIDIA_VISIBLE_DEVICES
-              value: all
-            - name: NVIDIA_DRIVER_CAPABILITIES
-              value: all
             - name: DISPLAY
               value: "xvfb:0"
           ports:
