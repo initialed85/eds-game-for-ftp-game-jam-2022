@@ -25,6 +25,7 @@ spec:
       nodeSelector:
         home-role: "storage"
         gpu: "no"
+        limited_memory: "no"
       containers:
         - name: server
           image: kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest

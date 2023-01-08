@@ -22,6 +22,10 @@ spec:
       labels:
         app: xvfb
     spec:
+      nodeSelector:
+        home-role: "storage"
+        gpu: "no"
+        limited_memory: "no"
       containers:
         - name: xvfb
           image: kube-registry:5000/eds-game-for-ftp-game-jam-2022-xvfb:latest
