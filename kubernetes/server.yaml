@@ -23,8 +23,6 @@ spec:
         app: server
     spec:
       nodeSelector:
-        home-role: "storage"
-        gpu: "no"
         limited_memory: "no"
       containers:
         - name: server

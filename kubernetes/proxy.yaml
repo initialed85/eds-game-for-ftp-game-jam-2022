@@ -22,6 +22,8 @@ spec:
       labels:
         app: proxy
     spec:
+      nodeSelector:
+        limited_memory: "no"
       containers:
         - name: proxy
           image: kube-registry:5000/eds-game-for-ftp-game-jam-2022-proxy:latest
