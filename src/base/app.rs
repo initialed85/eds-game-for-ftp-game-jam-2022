@@ -5,8 +5,8 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::log::LogPlugin;
 use bevy::math::Vec2;
 use bevy::prelude::{
-    default, trace, App, ClearColor, IntoSystemDescriptor, PluginGroup, SystemSet, WindowDescriptor,
-    WindowPlugin,
+    default, trace, App, ClearColor, IntoSystemDescriptor, PluginGroup, SystemSet,
+    WindowDescriptor, WindowPlugin,
 };
 use bevy::window::PresentMode;
 use bevy::window::WindowPosition::At;
@@ -53,7 +53,8 @@ pub fn get_base_app() -> App {
                 ..default()
             })
             .set(LogPlugin {
-                filter: "eds_game_for_ftp_game_jam_2022=trace,wgpu_core=warn,bevy_render=warn".into(),
+                filter: "eds_game_for_ftp_game_jam_2022=trace,wgpu_core=warn,bevy_render=warn"
+                    .into(),
                 level: bevy::log::Level::INFO,
             }),
     );
@@ -62,6 +63,8 @@ pub fn get_base_app() -> App {
         font_size: 10.0,
         ..default()
     });
+
+    app.add_plugin(bevy_framepace::FramepacePlugin);
 
     app.add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
         PIXELS_PER_METER,

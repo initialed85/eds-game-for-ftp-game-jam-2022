@@ -35,9 +35,11 @@ COPY client/index.html /srv/index.html
 
 RUN /srv/extract_static_content.sh
 
-FROM nginx:stable
+FROM --platform=linux/amd64 nginx:stable
 
 COPY --from=extractor /srv/index.html /usr/share/nginx/html/index.html
 COPY --from=extractor /srv/api /usr/share/nginx/html/api
 
 COPY client/default.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 1334

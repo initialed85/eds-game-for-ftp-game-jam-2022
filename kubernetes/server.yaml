@@ -25,20 +25,20 @@ spec:
       nodeSelector:
         limited_memory: "no"
         gpu: "yes"
-        gpu-vendor: "nvidia"
-      runtimeClassName: nvidia
+        gpu-vendor: "amd"
       containers:
+        - name: xvfb
+          image: kube-registry:5000/eds-game-for-ftp-game-jam-2022-xvfb:latest
         - name: server
           image: kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest
           env:
             - name: DISPLAY
-              value: "xvfb:0"
-            - name: NVIDIA_VISIBLE_DEVICES
-              value: all
-            - name: NVIDIA_DRIVER_CAPABILITIES
-              value: all
+              value: "localhost:0"
           ports:
             - containerPort: 8080
+          resources:
+            limits:
+              amd.com/gpu: "1"
 ---
 apiVersion: v1
 kind: Service

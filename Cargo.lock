@@ -464,6 +464,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_framepace"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97caa0b25d627df47f7cfba0b2a9612f4b4ca9d0f53d897a3d70e02fcffea833"
+dependencies = [
+ "bevy",
+ "spin_sleep",
+]
+
+[[package]]
 name = "bevy_gilrs"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1504,6 +1514,7 @@ dependencies = [
  "bevy",
  "bevy-debug-text-overlay",
  "bevy-inspector-egui",
+ "bevy_framepace",
  "bevy_prototype_debug_lines",
  "bevy_rapier2d",
  "console_error_panic_hook",
@@ -3399,6 +3410,16 @@ dependencies = [
  "optional",
  "robust",
  "smallvec",
+]
+
+[[package]]
+name = "spin_sleep"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cafa7900db085f4354dbc7025e25d7a839a14360ea13b5fc4fd717f2d3b23134"
+dependencies = [
+ "once_cell",
+ "winapi",
 ]
 
 [[package]]

@@ -1,11 +1,11 @@
-FROM ubuntu:22.04 AS base
+FROM --platform=linux/amd64 ubuntu:22.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
     curl \
     g++ pkg-config libx11-dev libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev \
-    dbus-x11 libxv1 mesa-utils mesa-utils-extra psmisc procps
+    dbus-x11 libxv1 mesa-utils mesa-utils-extra psmisc procps libvulkan-dev
 
 ENV LANG en_US.UTF-8
 RUN echo $LANG UTF-8 > /etc/locale.gen && \
@@ -27,7 +27,7 @@ RUN apt-get install -y dbus-x11 libxv1 mesa-utils mesa-utils-extra psmisc procps
 
 WORKDIR /srv/
 
-FROM base AS builder
+FROM --platform=linux/amd64 base AS builder
 
 COPY Cargo.toml /srv/Cargo.toml
 COPY Cargo.lock /srv/Cargo.lock
@@ -46,15 +46,13 @@ RUN \
     cargo build --target x86_64-unknown-linux-gnu --bin server --features server --profile release && \
     mv ./target/x86_64-unknown-linux-gnu/release/server ./server
 
-FROM base AS runner
+FROM --platform=linux/amd64 base AS runner
 
 WORKDIR /srv/
 
 COPY --from=builder /srv/server /srv/server
 
-ENV WASM_SERVER_RUNNER_ADDRESS=0.0.0.0
-
-EXPOSE 1334
+EXPOSE 8080
 
 STOPSIGNAL SIGINT
 

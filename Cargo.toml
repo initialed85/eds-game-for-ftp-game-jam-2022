@@ -20,6 +20,7 @@ ctrlc = { version = "3.2.3", optional = true, default-features = false }
 rmp-serde = "1.1.1"
 iyes_loopless = { version = "0.9.1", features = ["fixedtimestep"] }
 bevy-debug-text-overlay = "4.0.1"
+bevy_framepace = "0.11.0"
 
 [features]
 server = ["ctrlc"]
