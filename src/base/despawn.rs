@@ -14,13 +14,13 @@ pub fn base_handle_despawn_event(
     time: Res<Time>,
     mut commands: Commands,
 ) {
-    for despawn_event in despawn_event_reader.iter() {
+    for despawn_event in despawn_event_reader.read() {
         despawn_entity(
             despawn_event.clone(),
             &player_query,
             &projectile_query,
             &particle_query,
-            time.clone(),
+            *time,
             &mut commands,
         );
     }

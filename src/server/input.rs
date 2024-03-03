@@ -8,8 +8,11 @@ use crate::constants::{
 use crate::identity::player::Player;
 use crate::types::event::Input;
 
-pub fn handle_input_event(mut input_event_reader: EventReader<Input>, mut player_query: Query<&mut Player>) {
-    for input in input_event_reader.iter() {
+pub fn handle_input_event(
+    mut input_event_reader: EventReader<Input>,
+    mut player_query: Query<&mut Player>,
+) {
+    for input in input_event_reader.read() {
         for mut player in player_query.iter_mut() {
             if player.player_uuid != input.player_uuid {
                 continue;
@@ -28,7 +31,7 @@ pub fn handle_input_for_player(
         let mut inputs = player.unhandled_inputs.clone();
         player.unhandled_inputs.clear();
 
-        if inputs.len() == 0 {
+        if inputs.is_empty() {
             if player.last_input.is_some() {
                 inputs.insert(0, player.clone().last_input.unwrap());
             }
@@ -37,16 +40,12 @@ pub fn handle_input_for_player(
         }
 
         for last_input in inputs.iter() {
-            if last_input.is_left {
-                if velocity.angvel <= PLAYER_ANGULAR_VELOCITY_MAX {
-                    velocity.angvel += PLAYER_ANGULAR_VELOCITY_STEP;
-                }
+            if last_input.is_left && velocity.angvel <= PLAYER_ANGULAR_VELOCITY_MAX {
+                velocity.angvel += PLAYER_ANGULAR_VELOCITY_STEP;
             }
 
-            if last_input.is_right {
-                if velocity.angvel >= -PLAYER_ANGULAR_VELOCITY_MAX {
-                    velocity.angvel -= PLAYER_ANGULAR_VELOCITY_STEP;
-                }
+            if last_input.is_right && velocity.angvel >= -PLAYER_ANGULAR_VELOCITY_MAX {
+                velocity.angvel -= PLAYER_ANGULAR_VELOCITY_STEP;
             }
 
             if last_input.is_forward {

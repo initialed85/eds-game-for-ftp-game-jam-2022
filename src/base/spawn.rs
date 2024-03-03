@@ -19,14 +19,14 @@ pub fn base_handle_spawn_event(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut commands: Commands,
 ) {
-    for spawn_event in spawn_event_reader.iter() {
+    for spawn_event in spawn_event_reader.read() {
         spawn_entity(
             spawn_event.clone(),
             &game,
             &player_query,
             &projectile_query,
             &particle_query,
-            time.clone(),
+            *time,
             &mut meshes,
             &mut materials,
             &mut commands,

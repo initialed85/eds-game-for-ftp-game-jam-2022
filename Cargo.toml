@@ -4,32 +4,34 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.9.0"
-rapier2d = { version = "0.16.1", features = ["enhanced-determinism", "serde-serialize", "wasm-bindgen", "debug-render", "serde"] }
-bevy_rapier2d = "0.19.0"
-wasm-bindgen = "0.2"
-rand = "0.8.4"
-console_error_panic_hook = "0.1"
-js-sys = "0.3"
-serde = "1.0.148"
-serde_json = "1.0.89"
-tungstenite = "0.18.0"
-bevy-inspector-egui = "0.14.0"
-bevy_prototype_debug_lines = "0.9.0"
-ctrlc = { version = "3.2.3", optional = true, default-features = false }
-rmp-serde = "1.1.1"
-iyes_loopless = { version = "0.9.1", features = ["fixedtimestep"] }
-bevy-debug-text-overlay = "4.0.1"
-bevy_framepace = "0.11.0"
+bevy = { version = "0.12.1" }
+rapier2d = { version = "0.18.0", features = [
+    "enhanced-determinism",
+    "serde-serialize",
+    "wasm-bindgen",
+    "debug-render",
+    "serde",
+] }
+bevy_rapier2d = "0.24.0"
+bevy-inspector-egui = "0.22.1"
+bevy_prototype_debug_lines = "0.11.1"
+bevy-debug-text-overlay = "7.0.0"
+bevy_framepace = "0.14"
 
-[features]
-server = ["ctrlc"]
-client = []
-scratch = []
+rand = "0.8.5"
+ctrlc = { version = "3.4.2", optional = true, default-features = false }
 
-[dependencies.web-sys]
-version = "0.3.22"
-features = [
+serde = "1.0.196"
+serde_json = "1.0.113"
+rmp-serde = "1.1.2"
+tungstenite = "0.21.0"
+async-executor = "1.8.0"
+async-task = "4.7.0"
+
+console_error_panic_hook = "0.1.7"
+wasm-bindgen = "0.2.87"
+js-sys = "=0.3.64"
+web-sys = { version = "=0.3.64", features = [
     "BinaryType",
     "Blob",
     "ErrorEvent",
@@ -39,8 +41,15 @@ features = [
     "WebSocket",
     "Location",
     "Window",
-    "TouchEvent"
-]
+    "TouchEvent",
+] }
+thiserror = "1.0.57"
+anyhow = "1.0.80"
+
+[features]
+server = ["ctrlc"]
+client = []
+scratch = []
 
 [profile.dev]
 opt-level = 1
@@ -61,10 +70,3 @@ runner = "wasm-server-runner"
 [target.x86_64-unknown-linux-gnu]
 linker = "clang"
 rustflags = ["-Clink-arg=-fuse-ld=lld"]
-
-# [target.aarch64-apple-darwin]
-# rustflags = ["-C", "link-arg=-fuse-ld=/opt/homebrew/bin/zld", "-Zshare-generics=y"]
-
-# [target.x86_64-pc-windows-msvc]
-# linker = "rust-lld.exe"
-# rustflags = ["-Zshare-generics=n"]

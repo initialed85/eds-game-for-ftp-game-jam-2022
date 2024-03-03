@@ -1,8 +1,8 @@
 use bevy::log::trace;
 use bevy::prelude::{
-    default, BackgroundColor, BuildChildren, Button, ButtonBundle, Changed, Children, Color, Commands,
-    Component, Interaction, PositionType, Query, Res, ResMut, Size, Style, Text, TextBundle, TextStyle,
-    UiRect, Val, With,
+    default, BackgroundColor, BuildChildren, Button, ButtonBundle, Changed, Children, Color,
+    Commands, Component, Interaction, PositionType, Query, Res, ResMut, Size, Style, Text,
+    TextBundle, TextStyle, UiRect, Val, With,
 };
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -79,8 +79,6 @@ fn handle_button(
         (Changed<Interaction>, With<Button>),
     >,
 ) {
-    trace!("hi?");
-
     for (interaction, mut color, button_role) in &mut interaction_query {
         match *interaction {
             Interaction::Clicked => {

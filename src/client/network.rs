@@ -19,7 +19,7 @@ pub fn handle_websocket_client(
 
     let session_uuid = Uuid::default();
 
-    for outgoing_message_event in outgoing_message_event_reader.iter() {
+    for outgoing_message_event in outgoing_message_event_reader.read() {
         // trace!(
         //     "handle_websocket_server; outgoing_message - session_uuid={:?}, message={:?}",
         //     session_uuid,
@@ -30,9 +30,12 @@ pub fn handle_websocket_client(
 
     let websocket_open_events = web_socket.get_open_events();
     for session_uuid in websocket_open_events.iter() {
-        trace!("handle_websocket_server; open - session_uuid={:?}", session_uuid);
+        trace!(
+            "handle_websocket_server; open - session_uuid={:?}",
+            session_uuid
+        );
         open_event_writer.send(Open {
-            session_uuid: session_uuid.clone(),
+            session_uuid: *session_uuid,
         });
     }
 
@@ -44,16 +47,19 @@ pub fn handle_websocket_client(
         //     message
         // );
         incoming_message_event_writer.send(IncomingMessage {
-            session_uuid: session_uuid.clone(),
+            session_uuid: *session_uuid,
             message: message.clone(),
         });
     }
 
     let websocket_close_events = web_socket.get_close_events();
     for session_uuid in websocket_close_events.iter() {
-        trace!("handle_websocket_server; close - session_uuid={:?}", session_uuid);
+        trace!(
+            "handle_websocket_server; close - session_uuid={:?}",
+            session_uuid
+        );
         close_event_writer.send(Close {
-            session_uuid: session_uuid.clone(),
+            session_uuid: *session_uuid,
         });
     }
 }

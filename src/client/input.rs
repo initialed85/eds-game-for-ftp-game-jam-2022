@@ -1,7 +1,8 @@
+use bevy::log::warn;
 use bevy::prelude::{
-    default, trace, BackgroundColor, Button, ButtonBundle, Changed, Commands, Component, EventReader,
-    EventWriter, Input as KeyInput, Interaction, KeyCode, PositionType, Query, Res, ResMut, Resource, Size,
-    Style, UiRect, Val, With,
+    default, BackgroundColor, Button, ButtonBundle, Changed, Commands, Component, EventReader,
+    EventWriter, Input as KeyInput, Interaction, KeyCode, PositionType, Query, Res, ResMut,
+    Resource, Style, Val, With,
 };
 use bevy_debug_text_overlay::screen_print;
 
@@ -37,14 +38,13 @@ pub fn spawn_button(
     commands.spawn((
         ButtonBundle {
             style: Style {
-                size: Size::new(Val::Px(UI_BUTTON_WIDTH), Val::Px(UI_BUTTON_HEIGHT)),
+                width: Val::Px(UI_BUTTON_WIDTH),
+                height: Val::Px(UI_BUTTON_HEIGHT),
                 position_type: PositionType::Absolute,
-                position: UiRect {
-                    left: Val::Px(left),
-                    right: Default::default(),
-                    top: Val::Px(top),
-                    bottom: Default::default(),
-                },
+                left: Val::Px(left),
+                right: Default::default(),
+                top: Val::Px(top),
+                bottom: Default::default(),
                 ..default()
             },
             background_color: UI_BUTTON_NORMAL.into(),
@@ -69,7 +69,7 @@ pub fn handle_input_from_keyboard(
 
     let player = result.unwrap();
 
-    assert_eq!(player.is_local_player, true);
+    assert!(player.is_local_player);
 
     let inputs = vec![
         PLAYER_LEFT_KEY,
@@ -120,13 +120,13 @@ pub fn handle_input_from_button(
 
     let player = result.unwrap();
 
-    assert_eq!(player.is_local_player, true);
+    assert!(player.is_local_player);
 
     let mut was_input = false;
 
     for (interaction, mut color, button_role) in &mut interaction_query {
         match *interaction {
-            Interaction::Clicked => {
+            Interaction::Pressed => {
                 *color = UI_BUTTON_PRESSED.into();
 
                 if button_role.is_bottom_left {
@@ -184,20 +184,31 @@ pub fn handle_input_event(
     mut input_event_reader: EventReader<Input>,
     mut outgoing_message_event_writer: EventWriter<OutgoingMessage>,
 ) {
-    for input in input_event_reader.iter() {
+    for input in input_event_reader.read() {
+        let container = Container {
+            message_type: "input".to_string(),
+            join: None,
+            spawn: None,
+            input: Some(input.clone()),
+            update: None,
+            despawn: None,
+            leave: None,
+            collision: None,
+        };
+
+        let serialized_container = serialize(&container);
+        if serialized_container.is_err() {
+            warn!(
+                "failed to serialize {:?} {:?}",
+                container,
+                serialized_container.err()
+            );
+            continue;
+        }
         let outgoing_message = OutgoingMessage {
             session_uuid: None,
             not_session_uuid: None,
-            message: serialize(Container {
-                message_type: "input".to_string(),
-                join: None,
-                spawn: None,
-                input: Some(input.clone()),
-                update: None,
-                despawn: None,
-                leave: None,
-                collision: None,
-            }),
+            message: serialized_container.unwrap(),
         };
 
         outgoing_message_event_writer.send(outgoing_message);

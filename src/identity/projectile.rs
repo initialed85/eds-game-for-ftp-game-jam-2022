@@ -2,14 +2,16 @@ use bevy::asset::Assets;
 use bevy::ecs::system::EntityCommands;
 use bevy::math::Vec3;
 use bevy::prelude::{
-    default, shape, Color, ColorMaterial, Commands, Component, Entity, Mesh, Query, Res, ResMut, Time,
-    Transform,
+    default, shape, Color, ColorMaterial, Commands, Component, Entity, Mesh, Query, Res, ResMut,
+    Time, Transform,
 };
 use bevy::sprite::MaterialMesh2dBundle;
 use bevy::utils::Uuid;
 use bevy_rapier2d::dynamics::RigidBody::Dynamic;
 use bevy_rapier2d::dynamics::{Ccd, Sleeping, Velocity};
-use bevy_rapier2d::geometry::{ActiveEvents, Collider, ColliderMassProperties, Friction, Restitution};
+use bevy_rapier2d::geometry::{
+    ActiveEvents, Collider, ColliderMassProperties, Friction, Restitution,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::behaviour::collideable::Collideable;
@@ -47,7 +49,7 @@ pub fn spawn_projectile(
         }
     }
 
-    let mut transform = transform.clone();
+    let mut transform = transform;
 
     let mut size = Vec3::splat(MATERIAL_SCALE);
     size.y *= PROEJCTILE_DIMENSION_MULTIPLIER;
@@ -105,7 +107,7 @@ pub fn spawn_projectile(
     parent
         .insert(Dynamic)
         .insert(Sleeping::disabled())
-        .insert(velocity.clone());
+        .insert(velocity);
 
     if game.role == "server" {
         parent

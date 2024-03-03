@@ -1,3 +1,4 @@
+use anyhow::Result;
 use rmp_serde;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -7,34 +8,34 @@ use serde_json;
 // JSON
 //
 
-pub fn serialize_json<T>(t: T) -> String
+pub fn serialize_json<T>(t: T) -> Result<String>
 where
     T: Serialize,
 {
-    return serde_json::to_string(&t).unwrap();
+    Ok(serde_json::to_string(&t)?)
 }
 
-pub fn deserialize_json<T>(message: String) -> T
+pub fn deserialize_json<T>(message: String) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    return serde_json::from_str::<T>(message.as_str()).unwrap();
+    Ok(serde_json::from_str::<T>(message.as_str())?)
 }
 
 //
 // RMP
 //
 
-pub fn serialize<T>(t: T) -> Vec<u8>
+pub fn serialize<T>(t: T) -> Result<Vec<u8>>
 where
     T: Serialize,
 {
-    return rmp_serde::to_vec(&t).unwrap();
+    Ok(rmp_serde::to_vec(&t)?)
 }
 
-pub fn deserialize<T>(message: Vec<u8>) -> T
+pub fn deserialize<T>(message: Vec<u8>) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    return rmp_serde::from_slice::<T>(message.as_slice()).unwrap();
+    Ok(rmp_serde::from_slice::<T>(message.as_slice())?)
 }

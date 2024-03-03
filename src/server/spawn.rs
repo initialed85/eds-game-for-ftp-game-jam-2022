@@ -1,3 +1,4 @@
+use bevy::log::warn;
 use bevy::prelude::{EventReader, EventWriter};
 
 use crate::base::helpers::serialize;
@@ -8,8 +9,8 @@ pub fn handle_spawn_event(
     mut spawn_event_reader: EventReader<Spawn>,
     mut outgoing_message_event_writer: EventWriter<OutgoingMessage>,
 ) {
-    for spawn_event in spawn_event_reader.iter() {
-        let message = serialize(Container {
+    for spawn_event in spawn_event_reader.read() {
+        let container = Container {
             message_type: "spawn".to_string(),
             join: None,
             spawn: Some(spawn_event.clone()),
@@ -18,13 +19,22 @@ pub fn handle_spawn_event(
             despawn: None,
             leave: None,
             collision: None,
-        });
+        };
 
+        let serialized_container = serialize(&container);
+        if serialized_container.is_err() {
+            warn!(
+                "failed to serialize {:?} {:?}",
+                container,
+                serialized_container.err()
+            );
+            continue;
+        }
         // tell everyone to spawn the entity
         outgoing_message_event_writer.send(OutgoingMessage {
             session_uuid: None,
             not_session_uuid: None,
-            message: message.clone(),
+            message: serialized_container.unwrap(),
         });
     }
 }

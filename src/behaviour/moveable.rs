@@ -1,11 +1,11 @@
-use bevy::prelude::Component;
+use bevy::prelude::{Component, Event};
 use bevy::utils::Uuid;
 use serde::{Deserialize, Serialize};
 
 use crate::client::error::{QuatEMA, Vec2EMA, Vec3EMA, EMA};
 use crate::types::event::Update;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Component)]
+#[derive(Debug, Clone, Event, Serialize, Deserialize, Component)]
 pub struct Moveable {
     pub entity_uuid: Uuid,
     pub unhandled_updates: Vec<Update>,

@@ -1,20 +1,15 @@
 use std::collections::HashSet;
-use std::time::Duration;
 
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+
 use bevy::log::LogPlugin;
-use bevy::math::Vec2;
-use bevy::prelude::{
-    default, trace, App, ClearColor, IntoSystemDescriptor, PluginGroup, SystemSet,
-    WindowDescriptor, WindowPlugin,
-};
-use bevy::window::PresentMode;
+use bevy::math::IVec2;
+use bevy::prelude::*;
 use bevy::window::WindowPosition::At;
+use bevy::window::{PresentMode, WindowResolution};
 use bevy::DefaultPlugins;
 use bevy_debug_text_overlay::OverlayPlugin;
-use bevy_inspector_egui::WorldInspectorPlugin;
-use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
-use iyes_loopless::prelude::AppLooplessFixedTimestepExt;
+
+use bevy_rapier2d::prelude::{NoUserData, RapierPhysicsPlugin};
 
 use crate::base::despawn::base_handle_despawn_event;
 use crate::base::join::base_handle_join_event;
@@ -28,9 +23,7 @@ use crate::behaviour::collideable::handle_collision_event;
 use crate::behaviour::collideable::Collision;
 use crate::behaviour::expireable::handle_expireable;
 use crate::behaviour::weaponized::Fire;
-use crate::constants::{
-    BACKGROUND_COLOR, BASE_TIME_STEP, BASE_TIME_STEP_NAME, BOUNDS, PIXELS_PER_METER, TITLE,
-};
+use crate::constants::{BACKGROUND_COLOR, BASE_TIME_STEP, BOUNDS, PIXELS_PER_METER, TITLE};
 use crate::identity::game::Game;
 use crate::identity::particle::handle_particle;
 use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
@@ -42,14 +35,13 @@ pub fn get_base_app() -> App {
     app.add_plugins(
         DefaultPlugins
             .set(WindowPlugin {
-                window: WindowDescriptor {
+                primary_window: Some(Window {
                     title: TITLE.to_string(),
-                    width: BOUNDS.x,
-                    height: BOUNDS.y,
+                    resolution: WindowResolution::new(BOUNDS.x, BOUNDS.y),
                     present_mode: PresentMode::Fifo,
-                    position: At(Vec2::new(0.0, 0.0)),
+                    position: At(IVec2::new(0, 0)),
                     ..default()
-                },
+                }),
                 ..default()
             })
             .set(LogPlugin {
@@ -59,23 +51,18 @@ pub fn get_base_app() -> App {
             }),
     );
 
-    app.add_plugin(OverlayPlugin {
+    app.add_plugins(OverlayPlugin {
         font_size: 10.0,
         ..default()
     });
 
-    app.add_plugin(bevy_framepace::FramepacePlugin);
+    app.add_plugins(bevy_framepace::FramepacePlugin);
 
-    app.add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
+    app.add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
         PIXELS_PER_METER,
     ));
 
-    app.add_fixed_timestep(
-        Duration::from_secs_f64(BASE_TIME_STEP as f64),
-        BASE_TIME_STEP_NAME,
-    );
-
-    app.add_fixed_timestep_system_set(BASE_TIME_STEP_NAME, 0, SystemSet::default());
+    app.insert_resource(Time::<Fixed>::from_seconds(BASE_TIME_STEP));
 
     app.insert_resource(ClearColor(BACKGROUND_COLOR));
 
@@ -88,7 +75,7 @@ pub fn get_base_app() -> App {
         client_time_at_join: 0.0,
     });
 
-    app.add_startup_system(base_handle_setup);
+    app.add_systems(Startup, base_handle_setup);
 
     // register network events
     app.add_event::<Open>();
@@ -107,41 +94,43 @@ pub fn get_base_app() -> App {
     app.add_event::<Collision>();
 
     // handlers to wire network events into game events
-    app.add_system(base_handle_open_event);
-    app.add_system(base_handle_incoming_message_event);
-    app.add_system(base_handle_close_event);
+    app.add_systems(Update, base_handle_open_event);
+    app.add_systems(Update, base_handle_incoming_message_event);
+    app.add_systems(Update, base_handle_close_event);
 
     // handlers to wire game events into game state
-    app.add_system(base_handle_join_event.after(base_handle_incoming_message_event));
-    app.add_system(base_handle_spawn_event.after(base_handle_join_event));
-    app.add_system(base_handle_leave_event.after(base_handle_spawn_event));
-    app.add_system(handle_collision_event.after(base_handle_spawn_event));
-    app.add_system(base_handle_despawn_event.after(base_handle_leave_event));
+    app.add_systems(
+        Update,
+        base_handle_join_event.after(base_handle_incoming_message_event),
+    );
+    app.add_systems(
+        Update,
+        base_handle_spawn_event.after(base_handle_join_event),
+    );
+    app.add_systems(
+        Update,
+        base_handle_leave_event.after(base_handle_spawn_event),
+    );
+    app.add_systems(
+        Update,
+        handle_collision_event.after(base_handle_spawn_event),
+    );
+    app.add_systems(
+        Update,
+        base_handle_despawn_event.after(base_handle_leave_event),
+    );
 
     // handlers to calculate game state per time step
-    app.add_fixed_timestep_system(
-        BASE_TIME_STEP_NAME,
-        0,
-        handle_particle.after(handle_collision_event),
-    );
-    app.add_fixed_timestep_system(
-        BASE_TIME_STEP_NAME,
-        0,
-        handle_expireable.after(handle_collision_event),
-    );
-
-    let _ = RapierDebugRenderPlugin::default();
-    let _ = WorldInspectorPlugin::new();
-    let _ = LogDiagnosticsPlugin::default();
-    let _ = FrameTimeDiagnosticsPlugin::default();
+    app.add_systems(FixedUpdate, handle_particle.after(handle_collision_event));
+    app.add_systems(FixedUpdate, handle_expireable.after(handle_collision_event));
 
     // TODO: debugging related
-    // app.add_plugin(RapierDebugRenderPlugin::default());
-    // app.add_plugin(WorldInspectorPlugin::new());
-    // app.add_plugin(LogDiagnosticsPlugin::default());
-    // app.add_plugin(FrameTimeDiagnosticsPlugin::default());
+    // app.add_plugins(RapierDebugRenderPlugin::default());
+    // app.add_plugins(WorldInspectorPlugin::new());
+    // app.add_plugins(LogDiagnosticsPlugin::default());
+    // app.add_plugins(FrameTimeDiagnosticsPlugin);
 
     trace!("base.get_app(); returning app={:?}", app);
 
-    return app;
+    app
 }

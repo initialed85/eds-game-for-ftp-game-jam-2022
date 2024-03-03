@@ -12,7 +12,7 @@ docker rm -f "${name}" >/dev/null 2>&1 || true
 
 # docker run -d --restart=always -p 1334:1334 --name "${name}" "${name}"
 docker run \
-  --rm -it \
+  --rm -t \
   -p 80:80 \
   --add-host "server:${SERVER_HOST:-${OUTGOING_IP?-failed to discover OUTGOING_IP}}" \
   --add-host "client:${CLIENT_HOST:-${OUTGOING_IP?-failed to discover OUTGOING_IP}}" \

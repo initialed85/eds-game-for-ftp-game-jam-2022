@@ -10,7 +10,7 @@ pub fn base_handle_join_event(
 ) {
     assert_ne!(game.role, "base");
 
-    for join in join_event_reader.iter() {
+    for join in join_event_reader.read() {
         game.player_uuids.insert(join.player_uuid);
 
         if game.role != "client" {

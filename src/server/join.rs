@@ -1,3 +1,4 @@
+use bevy::log::warn;
 use bevy::math::{Quat, Vec2};
 use bevy::prelude::{Color, EventReader, EventWriter, Query, Transform};
 use bevy_rapier2d::dynamics::Velocity;
@@ -15,39 +16,62 @@ pub fn handle_join_event(
     player_query: Query<(&Player, &Transform, &Velocity)>,
     mut spawn_event_writer: EventWriter<Spawn>,
 ) {
-    for join_event in join_event_reader.iter() {
+    for join_event in join_event_reader.read() {
+        let container = Container {
+            message_type: "join".to_string(),
+            join: Some(join_event.clone()),
+            spawn: None,
+            input: None,
+            update: None,
+            despawn: None,
+            leave: None,
+            collision: None,
+        };
+
+        let serialized_container = serialize(&container);
+        if serialized_container.is_err() {
+            warn!(
+                "failed to serialize {:?} {:?}",
+                container,
+                serialized_container.err()
+            );
+            continue;
+        }
         // tell the joiner about itself
         outgoing_message_event_writer.send(OutgoingMessage {
             session_uuid: Some(join_event.player_uuid),
             not_session_uuid: None,
-            message: serialize(Container {
-                message_type: "join".to_string(),
-                join: Some(join_event.clone()),
-                spawn: None,
-                input: None,
-                update: None,
-                despawn: None,
-                leave: None,
-                collision: None,
-            }),
+            message: serialized_container.unwrap(),
         });
 
         // tell everyone else about the joiner
         let mut join_event_for_everyone_else = join_event.clone();
         join_event_for_everyone_else.is_for_local_player = false;
+
+        let container = Container {
+            message_type: "join".to_string(),
+            join: Some(join_event_for_everyone_else.clone()),
+            spawn: None,
+            input: None,
+            update: None,
+            despawn: None,
+            leave: None,
+            collision: None,
+        };
+
+        let serialized_container = serialize(&container);
+        if serialized_container.is_err() {
+            warn!(
+                "failed to serialize {:?} {:?}",
+                container,
+                serialized_container.err()
+            );
+            continue;
+        }
         outgoing_message_event_writer.send(OutgoingMessage {
             session_uuid: None,
             not_session_uuid: Some(join_event.player_uuid),
-            message: serialize(Container {
-                message_type: "join".to_string(),
-                join: Some(join_event_for_everyone_else.clone()),
-                spawn: None,
-                input: None,
-                update: None,
-                despawn: None,
-                leave: None,
-                collision: None,
-            }),
+            message: serialized_container.unwrap(),
         });
 
         let mut rng = thread_rng();
@@ -61,7 +85,8 @@ pub fn handle_join_event(
             rng.gen::<f32>() / 2.0, // all players between 0.0 and 0.5 as Z index
         );
 
-        let rotation = Quat::from_rotation_z(f32::to_radians(DEGREES_MAX * thread_rng().gen::<f32>()));
+        let rotation =
+            Quat::from_rotation_z(f32::to_radians(DEGREES_MAX * thread_rng().gen::<f32>()));
 
         // TODO: something to avoid spawn position collision
         let transform = Transform::from_translation(translation).with_rotation(rotation);
@@ -83,9 +108,9 @@ pub fn handle_join_event(
             spawn_event_writer.send(Spawn {
                 entity_uuid: player.player_uuid,
                 entity_type: "player".to_string(),
-                transform: Some(SerializableTransform::from_transform(transform.clone())),
-                velocity: Some(SerializableVelocity::from_velocity(velocity.clone())),
-                color: Some(player.color.clone()),
+                transform: Some(SerializableTransform::from_transform(*transform)),
+                velocity: Some(SerializableVelocity::from_velocity(*velocity)),
+                color: Some(player.color),
             });
         }
     }

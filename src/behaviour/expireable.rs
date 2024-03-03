@@ -1,4 +1,4 @@
-use bevy::prelude::{Component, Entity, EventWriter, Query, Res, Time};
+use bevy::prelude::{Component, Entity, Event, EventWriter, Query, Res, Time};
 use bevy::utils::Uuid;
 use serde::{Deserialize, Serialize};
 
@@ -7,7 +7,7 @@ use crate::identity::player::Player;
 use crate::identity::projectile::Projectile;
 use crate::types::event::Despawn;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Component)]
+#[derive(Debug, Clone, Event, Serialize, Deserialize, Component)]
 pub struct Expireable {
     pub entity_uuid: Uuid,
     pub expires_at: f64,

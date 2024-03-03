@@ -1,5 +1,5 @@
 use bevy::math::{Quat, Vec3};
-use bevy::prelude::{Color, Component, EventReader, EventWriter, Query, Transform};
+use bevy::prelude::{Color, Component, Event, EventReader, EventWriter, Query, Transform};
 use bevy::utils::Uuid;
 use bevy_rapier2d::pipeline::CollisionEvent;
 use bevy_rapier2d::prelude::Velocity;
@@ -20,7 +20,7 @@ pub struct Collider {
     velocity: Option<SerializableVelocity>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Event, Serialize, Deserialize)]
 pub struct Collision {
     pub collider_a: Collider,
     pub collider_b: Collider,
@@ -42,11 +42,11 @@ pub fn handle_rapier_collision_event(
     )>,
     mut collision_event_writer: EventWriter<Collision>,
 ) {
-    for rapier_collision_event in rapier_collision_event_reader.iter() {
+    for rapier_collision_event in rapier_collision_event_reader.read() {
         let mut entity_a = None;
         let mut entity_b = None;
 
-        let _ = match rapier_collision_event {
+        match rapier_collision_event {
             CollisionEvent::Started(_entity_a, _entity_b, _) => {
                 entity_a = Some(_entity_a);
                 entity_b = Some(_entity_b);
@@ -61,8 +61,8 @@ pub fn handle_rapier_collision_event(
         let entity_a = entity_a.unwrap();
         let entity_b = entity_b.unwrap();
 
-        let result_a = query.get(entity_a.clone());
-        let result_b = query.get(entity_b.clone());
+        let result_a = query.get(*entity_a);
+        let result_b = query.get(*entity_b);
 
         if result_a.is_err() || result_b.is_err() {
             continue;
@@ -74,25 +74,25 @@ pub fn handle_rapier_collision_event(
         let mut transform_a = None;
         if _transform_a.is_some() {
             transform_a = Some(SerializableTransform::from_transform(
-                _transform_a.unwrap().clone(),
+                *_transform_a.unwrap(),
             ));
         }
 
         let mut velocity_a = None;
         if _velocity_a.is_some() {
-            velocity_a = Some(SerializableVelocity::from_velocity(_velocity_a.unwrap().clone()));
+            velocity_a = Some(SerializableVelocity::from_velocity(*_velocity_a.unwrap()));
         }
 
         let mut transform_b = None;
         if _transform_b.is_some() {
             transform_b = Some(SerializableTransform::from_transform(
-                _transform_b.unwrap().clone(),
+                *_transform_b.unwrap(),
             ));
         }
 
         let mut velocity_b = None;
         if _velocity_b.is_some() {
-            velocity_b = Some(SerializableVelocity::from_velocity(_velocity_b.unwrap().clone()));
+            velocity_b = Some(SerializableVelocity::from_velocity(*_velocity_b.unwrap()));
         }
 
         let entity_type_a;
@@ -140,14 +140,19 @@ pub fn handle_collision_event(
     mut collision_event_reader: EventReader<Collision>,
     mut spawn_event_writer: EventWriter<Spawn>,
 ) {
-    for collision in collision_event_reader.iter() {
-        let mut transform_a = collision.clone().collider_a.transform.unwrap().to_transform();
+    for collision in collision_event_reader.read() {
+        let mut transform_a = collision
+            .clone()
+            .collider_a
+            .transform
+            .unwrap()
+            .to_transform();
 
         transform_a.rotation = Quat::default();
 
         for i in 0..4 {
             transform_a.rotation =
-                Quat::from_rotation_z(f32::to_radians((DEGREES_MAX / 8 as f32) * i as f32));
+                Quat::from_rotation_z(f32::to_radians((DEGREES_MAX / 8_f32) * i as f32));
 
             let mut velocity_a = Velocity::zero();
 
@@ -158,10 +163,12 @@ pub fn handle_collision_event(
 
             let mut color = Color::WHITE;
 
-            if collision.collider_a.entity_type == "player" || collision.collider_b.entity_type == "player" {
-                color = *vec![Color::YELLOW, Color::ORANGE, Color::ORANGE_RED, Color::RED]
+            if collision.collider_a.entity_type == "player"
+                || collision.collider_b.entity_type == "player"
+            {
+                color = *[Color::YELLOW, Color::ORANGE, Color::ORANGE_RED, Color::RED]
                     .choose(&mut thread_rng())
-                    .unwrap_or_else(|| &Color::YELLOW);
+                    .unwrap_or(&Color::YELLOW);
             }
 
             spawn_event_writer.send(Spawn {

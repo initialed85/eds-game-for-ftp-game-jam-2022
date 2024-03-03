@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use bevy::utils::Uuid;
+use bevy::{log::warn, utils::Uuid};
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::{window, BinaryType, ErrorEvent, Location, MessageEvent, WebSocket};
@@ -59,7 +59,7 @@ impl WebSocketClient {
         ws.set_onerror(Some(onerror_callback.as_ref().unchecked_ref()));
         onerror_callback.forget();
 
-        return web_socket_client;
+        web_socket_client
     }
 
     pub fn send(self: &WebSocketClient, session_uuid: Uuid, data: Vec<u8>) {
@@ -70,7 +70,8 @@ impl WebSocketClient {
     pub fn get_open_events(self: &mut WebSocketClient) -> Vec<Uuid> {
         let open_events = self.open_events.as_ref().borrow_mut().to_vec();
         self.open_events.as_ref().borrow_mut().clear();
-        return open_events;
+
+        open_events
     }
 
     pub fn get_incoming_message_events(self: &mut WebSocketClient) -> Vec<(Uuid, Vec<u8>)> {
@@ -82,18 +83,27 @@ impl WebSocketClient {
         for (session_uuid, batched_raw_messages) in incoming_message_events.iter() {
             let raw_messages = deserialize::<Vec<Vec<u8>>>(batched_raw_messages.clone());
 
-            for raw_message in raw_messages.iter() {
-                session_uuid_and_raw_message.push((session_uuid.clone(), raw_message.clone()));
+            if raw_messages.is_err() {
+                warn!(
+                    "failed to deserialize {:?} {:?}",
+                    batched_raw_messages.clone(),
+                    raw_messages.err()
+                );
+                continue;
+            }
+
+            for raw_message in raw_messages.unwrap().iter() {
+                session_uuid_and_raw_message.push((*session_uuid, raw_message.clone()));
             }
         }
 
-        return session_uuid_and_raw_message;
+        session_uuid_and_raw_message
     }
 
     pub fn get_close_events(self: &mut WebSocketClient) -> Vec<Uuid> {
         let close_events = self.close_events.as_ref().borrow_mut().to_vec();
         self.close_events.as_ref().borrow_mut().clear();
-        return close_events;
+        close_events
     }
 }
 
@@ -110,5 +120,5 @@ pub fn get_websocket_client() -> Rc<RefCell<WebSocketClient>> {
 
     let server_uri = format!("{:}//{:}/ws", ws_protocol, host);
 
-    return Rc::new(RefCell::new(WebSocketClient::new(server_uri.as_str())));
+    Rc::new(RefCell::new(WebSocketClient::new(server_uri.as_str())))
 }

@@ -1,3 +1,4 @@
+use bevy::log::warn;
 use bevy::prelude::{EventReader, EventWriter};
 
 use crate::base::helpers::deserialize;
@@ -6,7 +7,7 @@ use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
 use crate::types::network::{Close, Container, IncomingMessage, Open};
 
 pub fn base_handle_open_event(mut open_event_reader: EventReader<Open>) {
-    for open_event in open_event_reader.iter() {
+    for open_event in open_event_reader.read() {
         let _ = open_event;
     }
 }
@@ -21,8 +22,19 @@ pub fn base_handle_incoming_message_event(
     mut despawn_event_writer: EventWriter<Despawn>,
     mut collision_event_writer: EventWriter<Collision>,
 ) {
-    for incoming_message_event in incoming_message_event_reader.iter() {
+    for incoming_message_event in incoming_message_event_reader.read() {
         let container = deserialize::<Container>(incoming_message_event.message.clone());
+
+        if container.is_err() {
+            warn!(
+                "failed to deserialize {:?} {:?}",
+                incoming_message_event.message.clone(),
+                container.err()
+            );
+            continue;
+        }
+
+        let container = container.unwrap();
 
         if container.message_type == "join" {
             join_event_writer.send(container.join.unwrap());
@@ -43,7 +55,7 @@ pub fn base_handle_incoming_message_event(
 }
 
 pub fn base_handle_close_event(mut close_event_reader: EventReader<Close>) {
-    for close_event in close_event_reader.iter() {
+    for close_event in close_event_reader.read() {
         let _ = close_event;
     }
 }

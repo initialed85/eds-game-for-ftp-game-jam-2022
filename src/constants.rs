@@ -1,7 +1,8 @@
 use std::f32::consts::PI;
 
+use bevy::input::keyboard::KeyCode;
 use bevy::math::Vec2;
-use bevy::prelude::{Color, KeyCode};
+use bevy::prelude::Color;
 
 // misc
 pub const ZERO: f32 = 0.0;
@@ -39,7 +40,7 @@ pub const PLAYER_FORWARD_KEY: KeyCode = KeyCode::Up;
 pub const PLAYER_BACKWARD_KEY: KeyCode = KeyCode::Down;
 pub const PLAYER_LEFT_KEY: KeyCode = KeyCode::Left;
 pub const PLAYER_RIGHT_KEY: KeyCode = KeyCode::Right;
-pub const PLAYER_FIRE_KEY: KeyCode = KeyCode::LAlt;
+pub const PLAYER_FIRE_KEY: KeyCode = KeyCode::AltLeft;
 pub const PLAYER_ANGULAR_VELOCITY_MAX: f32 = 10.0 / 3.0;
 pub const PLAYER_ANGULAR_VELOCITY_STEP: f32 = 1.0 / 3.0;
 pub const PLAYER_LINEAR_VELOCITY_MAX: f32 = (10.0 / 3.0) * 2.0;
