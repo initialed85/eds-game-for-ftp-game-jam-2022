@@ -32,18 +32,12 @@ FROM --platform=linux/amd64 base AS builder
 COPY Cargo.toml /srv/Cargo.toml
 COPY Cargo.lock /srv/Cargo.lock
 RUN mkdir -p /srv/src/ && touch /srv/src/main.rs
-RUN \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/srv/target \
-    cargo update
+RUN cargo update
 
 RUN mkdir -p /srv/target
 
 COPY src /srv/src
-RUN \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/srv/target \
-    cargo build --target x86_64-unknown-linux-gnu --bin server --features server --profile release && \
+RUN cargo build --target x86_64-unknown-linux-gnu --bin server --features server --profile release && \
     mv ./target/x86_64-unknown-linux-gnu/release/server ./server
 
 FROM --platform=linux/amd64 base AS runner

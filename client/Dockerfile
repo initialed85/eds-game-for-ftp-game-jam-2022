@@ -10,16 +10,10 @@ FROM base AS builder
 COPY Cargo.toml /srv/Cargo.toml
 COPY Cargo.lock /srv/Cargo.lock
 RUN mkdir -p /srv/src/ && touch /srv/src/main.rs
-RUN \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/srv/target \
-    cargo update
+RUN cargo update
 
 COPY src /srv/src
-RUN \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/srv/target \
-    cargo build --target wasm32-unknown-unknown --bin client --features client --profile release && \
+RUN RUSTFLAGS=--cfg=web_sys_unstable_apis cargo build --target wasm32-unknown-unknown --bin client --features client --profile release && \
     mv ./target/wasm32-unknown-unknown/release/client.wasm ./client.wasm
 
 FROM base AS extractor

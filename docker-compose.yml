@@ -2,12 +2,14 @@ services:
 
   xvfb:
     restart: always
+    platform: linux/amd64
     build:
       dockerfile: xvfb/Dockerfile
       context: .
 
   server:
     restart: always
+    platform: linux/amd64
     build:
       dockerfile: server/Dockerfile
       context: .
@@ -16,12 +18,14 @@ services:
 
   client:
     restart: always
+    platform: linux/amd64
     build:
       dockerfile: client/Dockerfile
       context: .
 
   proxy:
     restart: always
+    platform: linux/amd64
     build:
       dockerfile: proxy/Dockerfile
       context: .
