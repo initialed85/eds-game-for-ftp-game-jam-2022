@@ -4,7 +4,7 @@ use bevy::prelude::{
     EventWriter, Input as KeyInput, Interaction, KeyCode, PositionType, Query, Res, ResMut,
     Resource, Style, Val, With,
 };
-use bevy_debug_text_overlay::screen_print;
+
 
 use crate::base::helpers::serialize;
 use crate::constants::{
@@ -213,13 +213,13 @@ pub fn handle_input_event(
 
         outgoing_message_event_writer.send(outgoing_message);
 
-        screen_print!(
-            "left={:?}, right={:?}, forward={:?}, backward={:?}, fire={:?}",
-            input.is_left,
-            input.is_right,
-            input.is_forward,
-            input.is_backward,
-            input.is_firing
-        );
+        // screen_print!(
+        //     "left={:?}, right={:?}, forward={:?}, backward={:?}, fire={:?}",
+        //     input.is_left,
+        //     input.is_right,
+        //     input.is_forward,
+        //     input.is_backward,
+        //     input.is_firing
+        // );
     }
 }

@@ -106,10 +106,10 @@ So the commands up being something like:
 
 ```shell
 # in shell 1
-find . -type f -name '*.rs' | entr -n -r -cc -s "cargo clippy --allow-dirty --allow-staged --fix --lib --target aarch64-apple-darwin --bin server --features server -p eds-game-for-ftp-game-jam-2022"
+find . -type f -name '*.rs' | entr -n -r -cc -s "c argo clippy --allow-dirty --allow-staged --fix --lib --target aarch64-apple-darwin --bin server --features server"
 
 # in shell 2
-find . -type f -name '*.rs' | entr -n -r -cc -s "RUSTFLAGS=--cfg=web_sys_unstable_apis cargo clippy --allow-dirty --allow-staged --fix --lib --target wasm32-unknown-unknown --bin client --features client -p eds-game-for-ftp-game-jam-22"
+find . -type f -name '*.rs' | entr -n -r -cc -s "RUSTFLAGS=--cfg=web_sys_unstable_apis cargo clippy --allow-dirty --allow-staged --fix --lib --target wasm32-unknown-unknown --bin client --features client"
 
 # in shell 3
 find . -type f -name '*.rs' | entr -n -r -cc -s "cargo build --target aarch64-apple-darwin --bin server --features server && target/aarch64-apple-darwin/debug/server"

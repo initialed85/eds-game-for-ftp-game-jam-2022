@@ -18,7 +18,7 @@ RUN RUSTFLAGS=--cfg=web_sys_unstable_apis cargo build --target wasm32-unknown-un
 
 FROM base AS extractor
 
-RUN apt-get update && apt-get install -y curl wget brotli
+RUN apt-get update && apt-get install -y curl wget brotli zstd
 
 WORKDIR /srv/
 

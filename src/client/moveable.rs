@@ -1,5 +1,5 @@
 use bevy::prelude::{Query, Res, Time, Transform};
-use bevy_debug_text_overlay::screen_print;
+
 use bevy_rapier2d::dynamics::Velocity;
 
 use crate::behaviour::moveable::Moveable;
@@ -50,8 +50,8 @@ pub fn handle_update_for_moveable(
             if game.local_player_uuid.is_some()
                 && game.local_player_uuid.unwrap() == update.entity_uuid
             {
-                let latency = update.server_time - synced_time;
-                screen_print!("latency={:?}, synced_time={:?}", latency, synced_time);
+                let _latency = update.server_time - synced_time;
+                // screen_print!("latency={:?}, synced_time={:?}", latency, synced_time);
             }
 
             if !update.includes_rollover {
@@ -73,17 +73,17 @@ pub fn handle_update_for_moveable(
                 let new_rotation_error = update_transform.rotation * new_rotation.inverse();
                 moveable.rotation_error.add_value(*time, new_rotation_error);
 
-                if game.local_player_uuid.is_some()
-                    && game.local_player_uuid.unwrap() == update.entity_uuid
-                {
-                    screen_print!(
-                        "translation_error={:?}",
-                        moveable.translation_error.get_value()
-                    );
-                    screen_print!("translation={:?}", transform.translation);
-                    screen_print!("rotation_error={:?}", moveable.rotation_error.get_value());
-                    screen_print!("rotation={:?}", transform.rotation);
-                }
+                // if game.local_player_uuid.is_some()
+                //     && game.local_player_uuid.unwrap() == update.entity_uuid
+                // {
+                //     screen_print!(
+                //         "translation_error={:?}",
+                //         moveable.translation_error.get_value()
+                //     );
+                //     screen_print!("translation={:?}", transform.translation);
+                //     screen_print!("rotation_error={:?}", moveable.rotation_error.get_value());
+                //     screen_print!("rotation={:?}", transform.rotation);
+                // }
             } else {
                 // rollover path upsets EMA, so just reset the values
                 transform.translation = update_transform.translation;
@@ -115,14 +115,14 @@ pub fn handle_update_for_moveable(
                 .angvel_error
                 .add_value(*time, new_angvel_error as f64);
 
-            if game.local_player_uuid.is_some()
-                && game.local_player_uuid.unwrap() == update.entity_uuid
-            {
-                screen_print!("linvel={:?}", velocity.linvel);
-                screen_print!("linvel_error={:?}", moveable.linvel_error.get_value());
-                screen_print!("angvel={:?}", velocity.angvel);
-                screen_print!("angvel_error={:?}", moveable.angvel_error.get_value());
-            }
+            // if game.local_player_uuid.is_some()
+            //     && game.local_player_uuid.unwrap() == update.entity_uuid
+            // {
+            //     screen_print!("linvel={:?}", velocity.linvel);
+            //     screen_print!("linvel_error={:?}", moveable.linvel_error.get_value());
+            //     screen_print!("angvel={:?}", velocity.angvel);
+            //     screen_print!("angvel_error={:?}", moveable.angvel_error.get_value());
+            // }
         }
 
         update.handled_at = Some(time.elapsed_seconds_f64());
