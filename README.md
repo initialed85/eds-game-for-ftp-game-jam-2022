@@ -1,5 +1,7 @@
 # eds-game-for-ftp-game-jam-2022
 
+# status: working but buggy; [play it in your browser](https://eds-game-for-ftp-game-jam-2022.initialed85.cc/)
+
 What is it? Not sure yet- looks like it's gonna be a bit like a multiplayer Asteroids.
 
 ## Context
