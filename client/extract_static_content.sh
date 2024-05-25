@@ -18,7 +18,8 @@ done
 echo -e "\ndownloading .js and .wasm files..."
 mkdir -p ./api/
 curl -s http://127.0.0.1:1334/api/wasm.js >./api/wasm.js
-curl -s http://127.0.0.1:1334/api/wasm.wasm | brotli -d >./api/wasm.wasm
+# curl -s http://127.0.0.1:1334/api/wasm.wasm | brotli -d >./api/wasm.wasm
+curl -s http://127.0.0.1:1334/api/wasm.wasm >./api/wasm.wasm
 
 echo -e "\ndone; extracted:\n"
 
