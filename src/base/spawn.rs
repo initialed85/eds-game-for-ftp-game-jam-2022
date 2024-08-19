@@ -6,10 +6,10 @@ use crate::identity::game::Game;
 use crate::identity::particle::Particle;
 use crate::identity::player::Player;
 use crate::identity::projectile::Projectile;
-use crate::types::event::Spawn;
+use crate::types::event::SpawnEvent;
 
 pub fn base_handle_spawn_event(
-    mut spawn_event_reader: EventReader<Spawn>,
+    mut spawn_event_reader: EventReader<SpawnEvent>,
     game: Res<Game>,
     player_query: Query<&Player>,
     projectile_query: Query<&Projectile>,
@@ -19,14 +19,14 @@ pub fn base_handle_spawn_event(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut commands: Commands,
 ) {
-    for spawn_event in spawn_event_reader.iter() {
+    for spawn_event in spawn_event_reader.read() {
         spawn_entity(
             spawn_event.clone(),
             &game,
             &player_query,
             &projectile_query,
             &particle_query,
-            time.clone(),
+            *time,
             &mut meshes,
             &mut materials,
             &mut commands,

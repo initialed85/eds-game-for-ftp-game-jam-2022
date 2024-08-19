@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04 AS base
+FROM --platform=linux/amd64 ubuntu:24.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 

@@ -1,14 +1,14 @@
 use bevy::prelude::{EventReader, EventWriter};
 
 use crate::base::helpers::serialize;
-use crate::types::event::Despawn;
-use crate::types::network::{Container, OutgoingMessage};
+use crate::types::event::DespawnEvent;
+use crate::types::network::{Container, OutgoingMessageEvent};
 
 pub fn handle_despawn_event(
-    mut despawn_event_reader: EventReader<Despawn>,
-    mut outgoing_message_event_writer: EventWriter<OutgoingMessage>,
+    mut despawn_event_reader: EventReader<DespawnEvent>,
+    mut outgoing_message_event_writer: EventWriter<OutgoingMessageEvent>,
 ) {
-    for despawn_event in despawn_event_reader.iter() {
+    for despawn_event in despawn_event_reader.read() {
         if despawn_event.entity_type == "particle" {
             continue;
         }
@@ -25,7 +25,7 @@ pub fn handle_despawn_event(
         });
 
         // tell everyone to despawn the entity
-        outgoing_message_event_writer.send(OutgoingMessage {
+        outgoing_message_event_writer.send(OutgoingMessageEvent {
             session_uuid: None,
             not_session_uuid: None,
             message: message.clone(),

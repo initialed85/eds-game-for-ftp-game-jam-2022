@@ -11,7 +11,7 @@ pub fn serialize_json<T>(t: T) -> String
 where
     T: Serialize,
 {
-    return serde_json::to_string(&t).unwrap();
+    serde_json::to_string(&t).unwrap()
 }
 
 pub fn deserialize_json<T>(message: String) -> T
@@ -29,7 +29,7 @@ pub fn serialize<T>(t: T) -> Vec<u8>
 where
     T: Serialize,
 {
-    return rmp_serde::to_vec(&t).unwrap();
+    rmp_serde::to_vec(&t).unwrap()
 }
 
 pub fn deserialize<T>(message: Vec<u8>) -> T

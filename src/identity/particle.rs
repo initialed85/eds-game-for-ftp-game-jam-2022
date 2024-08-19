@@ -2,15 +2,15 @@ use bevy::asset::Assets;
 use bevy::ecs::system::EntityCommands;
 use bevy::math::{Quat, Vec3};
 use bevy::prelude::{
-    default, shape, Color, ColorMaterial, Commands, Component, Entity, Mesh, Query, Res, ResMut, Time,
-    Transform,
+    default, Color, ColorMaterial, Commands, Component, Entity, Mesh, Query, Rectangle, Res,
+    ResMut, Time, Transform,
 };
-use bevy::reflect::Uuid;
 use bevy::sprite::MaterialMesh2dBundle;
 use bevy_rapier2d::dynamics::RigidBody::Dynamic;
 use bevy_rapier2d::dynamics::{Sleeping, Velocity};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::behaviour::expireable::Expireable;
 use crate::constants::{
@@ -37,7 +37,7 @@ pub fn spawn_particle(
     materials: &mut ResMut<Assets<ColorMaterial>>,
     commands: &mut Commands,
 ) {
-    let mut transform = transform.clone();
+    let mut transform = transform;
 
     let mut size = Vec3::splat(MATERIAL_SCALE);
     size.y *= PARTICLE_DIMENSION_MULTIPLIER;
@@ -46,10 +46,9 @@ pub fn spawn_particle(
     transform.scale = size;
 
     let mesh = meshes
-        .add(Mesh::from(shape::Box::new(
+        .add(Mesh::from(Rectangle::new(
             1.0 * PARTICLE_DIMENSION_MULTIPLIER,
             1.0 * PARTICLE_DIMENSION_MULTIPLIER,
-            ZERO,
         )))
         .into();
 
@@ -69,7 +68,9 @@ pub fn spawn_particle(
 
     let expireable = Expireable {
         entity_uuid: particle_uuid,
-        expires_at: time.elapsed_seconds_f64() + PARTICLE_EXPIRY_SECONDS + thread_rng().gen::<f64>(),
+        expires_at: time.elapsed_seconds_f64()
+            + PARTICLE_EXPIRY_SECONDS
+            + thread_rng().gen::<f64>(),
     };
 
     let mut parent: EntityCommands = commands.spawn((material_mesh, particle, expireable));
@@ -77,7 +78,7 @@ pub fn spawn_particle(
     parent
         .insert(Dynamic)
         .insert(Sleeping::disabled())
-        .insert(velocity.clone());
+        .insert(velocity);
 }
 
 pub fn despawn_particle(

@@ -1,16 +1,19 @@
 use bevy::math::Vec3;
-use bevy::prelude::{Color, Component, EventReader, EventWriter, Query, Res, Time, Transform};
-use bevy::utils::Uuid;
+use bevy::prelude::{
+    Color, Component, Event, EventReader, EventWriter, Query, Res, Time, Transform,
+};
 use bevy_rapier2d::prelude::Velocity;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::constants::{
-    MATERIAL_SCALE, PLAYER_HEIGHT_MULTIPLIER, PROJECTILE_LINEAR_VELOCITY, WEAPON_FIRE_RATE_SECONDS, ZERO,
+    MATERIAL_SCALE, PLAYER_HEIGHT_MULTIPLIER, PROJECTILE_LINEAR_VELOCITY, WEAPON_FIRE_RATE_SECONDS,
+    ZERO,
 };
-use crate::types::event::{SerializableTransform, SerializableVelocity, Spawn};
+use crate::types::event::{SerializableTransform, SerializableVelocity, SpawnEvent};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Fire {
+#[derive(Event, Debug, Clone, Serialize, Deserialize)]
+pub struct FireEvent {
     pub weapon_uuid: Uuid,
 }
 
@@ -21,20 +24,20 @@ pub struct Weaponized {
 }
 
 impl Weaponized {
-    pub fn fire(self: &Weaponized, fire_event_writer: &mut EventWriter<'_, '_, Fire>) {
-        fire_event_writer.send(Fire {
+    pub fn fire(self: &Weaponized, fire_event_writer: &mut EventWriter<'_, FireEvent>) {
+        fire_event_writer.send(FireEvent {
             weapon_uuid: self.weapon_uuid,
         });
     }
 }
 
 pub fn handle_fire_event(
-    mut fire_event_reader: EventReader<Fire>,
+    mut fire_event_reader: EventReader<FireEvent>,
     time: Res<Time>,
     mut weapon_query: Query<(&mut Weaponized, &Transform)>,
-    mut spawn_event_writer: EventWriter<Spawn>,
+    mut spawn_event_writer: EventWriter<SpawnEvent>,
 ) {
-    for fire_event in fire_event_reader.iter() {
+    for fire_event in fire_event_reader.read() {
         for (mut weapon, transform) in weapon_query.iter_mut() {
             if weapon.weapon_uuid != fire_event.weapon_uuid {
                 continue;
@@ -51,7 +54,7 @@ pub fn handle_fire_event(
             );
 
             let rotated_projected_offset = transform.rotation.mul_vec3(projectile_offset);
-            let mut projectile_transform = transform.clone();
+            let mut projectile_transform = *transform;
             projectile_transform.translation += rotated_projected_offset;
 
             let mut projectile_velocity = Velocity::default();
@@ -60,12 +63,12 @@ pub fn handle_fire_event(
                 .mul_vec3(Vec3::new(ZERO, PROJECTILE_LINEAR_VELOCITY, 0.0))
                 .truncate();
 
-            spawn_event_writer.send(Spawn {
+            spawn_event_writer.send(SpawnEvent {
                 entity_uuid: Uuid::new_v4(),
                 entity_type: "projectile".to_string(),
                 transform: Some(SerializableTransform::from_transform(projectile_transform)),
                 velocity: Some(SerializableVelocity::from_velocity(projectile_velocity)),
-                color: Some(Color::CYAN),
+                color: Some(Color::srgb(0.0, 1.0, 1.0)),
             });
 
             weapon.last_fired_at = time.elapsed_seconds_f64();

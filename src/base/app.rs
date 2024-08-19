@@ -1,21 +1,3 @@
-use std::collections::HashSet;
-use std::time::Duration;
-
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
-use bevy::log::LogPlugin;
-use bevy::math::Vec2;
-use bevy::prelude::{
-    default, trace, App, ClearColor, IntoSystemDescriptor, PluginGroup, SystemSet,
-    WindowDescriptor, WindowPlugin,
-};
-use bevy::window::PresentMode;
-use bevy::window::WindowPosition::At;
-use bevy::DefaultPlugins;
-use bevy_debug_text_overlay::OverlayPlugin;
-use bevy_inspector_egui::WorldInspectorPlugin;
-use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
-use iyes_loopless::prelude::AppLooplessFixedTimestepExt;
-
 use crate::base::despawn::base_handle_despawn_event;
 use crate::base::join::base_handle_join_event;
 use crate::base::leave::base_handle_leave_event;
@@ -25,16 +7,47 @@ use crate::base::network::{
 use crate::base::setup::base_handle_setup;
 use crate::base::spawn::base_handle_spawn_event;
 use crate::behaviour::collideable::handle_collision_event;
-use crate::behaviour::collideable::Collision;
+use crate::behaviour::collideable::CollisionEvent;
 use crate::behaviour::expireable::handle_expireable;
-use crate::behaviour::weaponized::Fire;
-use crate::constants::{
-    BACKGROUND_COLOR, BASE_TIME_STEP, BASE_TIME_STEP_NAME, BOUNDS, PIXELS_PER_METER, TITLE,
-};
+use crate::behaviour::weaponized::FireEvent;
+use crate::constants::{BACKGROUND_COLOR, BASE_TIME_STEP, BOUNDS, PIXELS_PER_METER, TITLE};
 use crate::identity::game::Game;
 use crate::identity::particle::handle_particle;
-use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
-use crate::types::network::{Close, IncomingMessage, Open, OutgoingMessage};
+use crate::types::event::{
+    DespawnEvent, InputEvent, JoinEvent, LeaveEvent, SpawnEvent, UpdateEvent,
+};
+use crate::types::network::{CloseEvent, IncomingMessageEvent, OpenEvent, OutgoingMessageEvent};
+use bevy::app::MainScheduleOrder;
+use bevy::ecs::schedule::ScheduleLabel;
+use bevy::log::LogPlugin;
+use bevy::math::IVec2;
+use bevy::prelude::{
+    default, trace, App, ClearColor, Fixed, FixedUpdate, PluginGroup, Schedule, Startup, Time,
+    Update, Window, WindowPlugin,
+};
+use bevy::window::WindowPosition::At;
+use bevy::window::{PresentMode, WindowResolution};
+use bevy::DefaultPlugins;
+use bevy_rapier2d::prelude::{NoUserData, RapierPhysicsPlugin};
+use std::collections::HashSet;
+
+#[derive(ScheduleLabel, Debug, Hash, PartialEq, Eq, Clone)]
+pub struct NetworkTransition;
+
+#[derive(ScheduleLabel, Debug, Hash, PartialEq, Eq, Clone)]
+pub struct BaseNetworkTransition;
+
+#[derive(ScheduleLabel, Debug, Hash, PartialEq, Eq, Clone)]
+pub struct AfterNetworkTransition1;
+
+#[derive(ScheduleLabel, Debug, Hash, PartialEq, Eq, Clone)]
+pub struct AfterNetworkTransition2;
+
+#[derive(ScheduleLabel, Debug, Hash, PartialEq, Eq, Clone)]
+pub struct AfterNetworkTransition3;
+
+#[derive(ScheduleLabel, Debug, Hash, PartialEq, Eq, Clone)]
+pub struct AfterNetworkTransition4;
 
 pub fn get_base_app() -> App {
     let mut app = App::new();
@@ -42,40 +55,28 @@ pub fn get_base_app() -> App {
     app.add_plugins(
         DefaultPlugins
             .set(WindowPlugin {
-                window: WindowDescriptor {
+                primary_window: Some(Window {
                     title: TITLE.to_string(),
-                    width: BOUNDS.x,
-                    height: BOUNDS.y,
+                    resolution: WindowResolution::new(BOUNDS.x, BOUNDS.y),
                     present_mode: PresentMode::Fifo,
-                    position: At(Vec2::new(0.0, 0.0)),
+                    position: At(IVec2::new(0, 0)),
                     ..default()
-                },
+                }),
                 ..default()
             })
-            .set(LogPlugin {
+            .add(bevy_framepace::FramepacePlugin)
+            .add(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
+                PIXELS_PER_METER,
+            ))
+            .add(LogPlugin {
                 filter: "eds_game_for_ftp_game_jam_2022=trace,wgpu_core=warn,bevy_render=warn"
                     .into(),
                 level: bevy::log::Level::INFO,
+                ..default()
             }),
     );
 
-    app.add_plugin(OverlayPlugin {
-        font_size: 10.0,
-        ..default()
-    });
-
-    app.add_plugin(bevy_framepace::FramepacePlugin);
-
-    app.add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
-        PIXELS_PER_METER,
-    ));
-
-    app.add_fixed_timestep(
-        Duration::from_secs_f64(BASE_TIME_STEP as f64),
-        BASE_TIME_STEP_NAME,
-    );
-
-    app.add_fixed_timestep_system_set(BASE_TIME_STEP_NAME, 0, SystemSet::default());
+    app.insert_resource(Time::<Fixed>::from_seconds(BASE_TIME_STEP));
 
     app.insert_resource(ClearColor(BACKGROUND_COLOR));
 
@@ -88,60 +89,83 @@ pub fn get_base_app() -> App {
         client_time_at_join: 0.0,
     });
 
-    app.add_startup_system(base_handle_setup);
+    let network_transition = Schedule::new(NetworkTransition);
+    app.add_schedule(network_transition);
+
+    let base_network_transition = Schedule::new(BaseNetworkTransition);
+    app.add_schedule(base_network_transition);
+
+    let after_network_transition_1 = Schedule::new(AfterNetworkTransition1);
+    app.add_schedule(after_network_transition_1);
+
+    let after_network_transition_2 = Schedule::new(AfterNetworkTransition2);
+    app.add_schedule(after_network_transition_2);
+
+    let after_network_transition_3 = Schedule::new(AfterNetworkTransition3);
+    app.add_schedule(after_network_transition_3);
+
+    let after_network_transition_4 = Schedule::new(AfterNetworkTransition4);
+    app.add_schedule(after_network_transition_4);
+
+    app.world_mut()
+        .resource_mut::<MainScheduleOrder>()
+        .insert_before(Update, AfterNetworkTransition4);
+
+    app.world_mut()
+        .resource_mut::<MainScheduleOrder>()
+        .insert_before(AfterNetworkTransition4, AfterNetworkTransition3);
+
+    app.world_mut()
+        .resource_mut::<MainScheduleOrder>()
+        .insert_before(AfterNetworkTransition3, AfterNetworkTransition2);
+
+    app.world_mut()
+        .resource_mut::<MainScheduleOrder>()
+        .insert_before(AfterNetworkTransition2, AfterNetworkTransition1);
+
+    app.world_mut()
+        .resource_mut::<MainScheduleOrder>()
+        .insert_before(AfterNetworkTransition1, BaseNetworkTransition);
+
+    app.world_mut()
+        .resource_mut::<MainScheduleOrder>()
+        .insert_before(BaseNetworkTransition, NetworkTransition);
+
+    app.add_systems(Startup, base_handle_setup);
 
     // register network events
-    app.add_event::<Open>();
-    app.add_event::<IncomingMessage>();
-    app.add_event::<OutgoingMessage>();
-    app.add_event::<Close>();
+    app.add_event::<OpenEvent>();
+    app.add_event::<IncomingMessageEvent>();
+    app.add_event::<OutgoingMessageEvent>();
+    app.add_event::<CloseEvent>();
 
     // register game events
-    app.add_event::<Join>();
-    app.add_event::<Spawn>();
-    app.add_event::<Input>();
-    app.add_event::<Update>();
-    app.add_event::<Despawn>();
-    app.add_event::<Leave>();
-    app.add_event::<Fire>();
-    app.add_event::<Collision>();
+    app.add_event::<JoinEvent>();
+    app.add_event::<SpawnEvent>();
+    app.add_event::<InputEvent>();
+    app.add_event::<UpdateEvent>();
+    app.add_event::<DespawnEvent>();
+    app.add_event::<LeaveEvent>();
+    app.add_event::<FireEvent>();
+    app.add_event::<CollisionEvent>();
 
-    // handlers to wire network events into game events
-    app.add_system(base_handle_open_event);
-    app.add_system(base_handle_incoming_message_event);
-    app.add_system(base_handle_close_event);
+    // handlers to wire base network events into server / client game events
+    app.add_systems(BaseNetworkTransition, base_handle_open_event);
+    app.add_systems(BaseNetworkTransition, base_handle_incoming_message_event);
+    app.add_systems(BaseNetworkTransition, base_handle_close_event);
 
     // handlers to wire game events into game state
-    app.add_system(base_handle_join_event.after(base_handle_incoming_message_event));
-    app.add_system(base_handle_spawn_event.after(base_handle_join_event));
-    app.add_system(base_handle_leave_event.after(base_handle_spawn_event));
-    app.add_system(handle_collision_event.after(base_handle_spawn_event));
-    app.add_system(base_handle_despawn_event.after(base_handle_leave_event));
+    app.add_systems(AfterNetworkTransition1, base_handle_join_event);
+    app.add_systems(AfterNetworkTransition1, base_handle_leave_event);
+    app.add_systems(AfterNetworkTransition2, base_handle_spawn_event);
+    app.add_systems(AfterNetworkTransition2, base_handle_despawn_event);
+    app.add_systems(AfterNetworkTransition3, handle_collision_event);
 
     // handlers to calculate game state per time step
-    app.add_fixed_timestep_system(
-        BASE_TIME_STEP_NAME,
-        0,
-        handle_particle.after(handle_collision_event),
-    );
-    app.add_fixed_timestep_system(
-        BASE_TIME_STEP_NAME,
-        0,
-        handle_expireable.after(handle_collision_event),
-    );
-
-    let _ = RapierDebugRenderPlugin::default();
-    let _ = WorldInspectorPlugin::new();
-    let _ = LogDiagnosticsPlugin::default();
-    let _ = FrameTimeDiagnosticsPlugin::default();
-
-    // TODO: debugging related
-    // app.add_plugin(RapierDebugRenderPlugin::default());
-    // app.add_plugin(WorldInspectorPlugin::new());
-    // app.add_plugin(LogDiagnosticsPlugin::default());
-    // app.add_plugin(FrameTimeDiagnosticsPlugin::default());
+    app.add_systems(FixedUpdate, handle_particle);
+    app.add_systems(FixedUpdate, handle_expireable);
 
     trace!("base.get_app(); returning app={:?}", app);
 
-    return app;
+    app
 }

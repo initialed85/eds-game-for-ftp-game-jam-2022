@@ -1,16 +1,16 @@
 use bevy::prelude::{trace, EventReader, Res, ResMut, Time};
 
 use crate::identity::game::Game;
-use crate::types::event::Join;
+use crate::types::event::JoinEvent;
 
 pub fn base_handle_join_event(
-    mut join_event_reader: EventReader<Join>,
+    mut join_event_reader: EventReader<JoinEvent>,
     mut game: ResMut<Game>,
     time: Res<Time>,
 ) {
     assert_ne!(game.role, "base");
 
-    for join in join_event_reader.iter() {
+    for join in join_event_reader.read() {
         game.player_uuids.insert(join.player_uuid);
 
         if game.role != "client" {

@@ -10,11 +10,11 @@ pub struct EMA {
 
 impl EMA {
     pub fn new(smoothing_factor: f64) -> EMA {
-        return EMA {
+        EMA {
             smoothing_factor,
             value: 0.0,
             last_measurement_at: 0.0,
-        };
+        }
     }
 
     pub fn add_value(self: &mut EMA, time: Time, value: f64) {
@@ -39,7 +39,7 @@ impl EMA {
     }
 
     pub fn get_value(self: &EMA) -> f64 {
-        return self.value;
+        self.value
     }
 
     pub fn reset(self: &mut EMA) {
@@ -62,12 +62,12 @@ impl Vec2EMA {
 
         e.set_value(Vec2::ZERO);
 
-        return e;
+        e
     }
 
     pub fn add_value(self: &mut Vec2EMA, time: Time, value: Vec2) {
-        self.x_ema.add_value(time.clone(), value.x as f64);
-        self.y_ema.add_value(time.clone(), value.y as f64);
+        self.x_ema.add_value(time, value.x as f64);
+        self.y_ema.add_value(time, value.y as f64);
     }
 
     fn set_value(self: &mut Vec2EMA, value: Vec2) {
@@ -76,7 +76,7 @@ impl Vec2EMA {
     }
 
     pub fn get_value(self: &Vec2EMA) -> Vec2 {
-        return Vec2::new(self.x_ema.get_value() as f32, self.y_ema.get_value() as f32);
+        Vec2::new(self.x_ema.get_value() as f32, self.y_ema.get_value() as f32)
     }
 
     pub fn reset(self: &mut Vec2EMA) {
@@ -101,13 +101,13 @@ impl Vec3EMA {
 
         e.set_value(Vec3::ZERO);
 
-        return e;
+        e
     }
 
     pub fn add_value(self: &mut Vec3EMA, time: Time, value: Vec3) {
-        self.x_ema.add_value(time.clone(), value.x as f64);
-        self.y_ema.add_value(time.clone(), value.y as f64);
-        self.z_ema.add_value(time.clone(), value.z as f64);
+        self.x_ema.add_value(time, value.x as f64);
+        self.y_ema.add_value(time, value.y as f64);
+        self.z_ema.add_value(time, value.z as f64);
     }
 
     fn set_value(self: &mut Vec3EMA, value: Vec3) {
@@ -117,11 +117,11 @@ impl Vec3EMA {
     }
 
     pub fn get_value(self: &Vec3EMA) -> Vec3 {
-        return Vec3::new(
+        Vec3::new(
             self.x_ema.get_value() as f32,
             self.y_ema.get_value() as f32,
             self.z_ema.get_value() as f32,
-        );
+        )
     }
 
     pub fn reset(self: &mut Vec3EMA) {
@@ -144,14 +144,14 @@ impl QuatEMA {
 
         e.set_value(Quat::IDENTITY);
 
-        return e;
+        e
     }
 
     pub fn add_value(self: &mut QuatEMA, time: Time, value: Quat) {
         let (axis, angle) = value.to_axis_angle();
 
-        self.axis_ema.add_value(time.clone(), axis);
-        self.angle_ema.add_value(time.clone(), angle as f64);
+        self.axis_ema.add_value(time, axis);
+        self.angle_ema.add_value(time, angle as f64);
     }
 
     fn set_value(self: &mut QuatEMA, value: Quat) {
@@ -162,7 +162,7 @@ impl QuatEMA {
     }
 
     pub fn get_value(self: &QuatEMA) -> Quat {
-        return Quat::from_axis_angle(self.axis_ema.get_value(), self.angle_ema.get_value() as f32);
+        Quat::from_axis_angle(self.axis_ema.get_value(), self.angle_ema.get_value() as f32)
     }
 
     pub fn reset(self: &mut QuatEMA) {

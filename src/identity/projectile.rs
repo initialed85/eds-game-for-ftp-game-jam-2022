@@ -1,16 +1,18 @@
 use bevy::asset::Assets;
 use bevy::ecs::system::EntityCommands;
-use bevy::math::Vec3;
+use bevy::math::{Vec2, Vec3};
 use bevy::prelude::{
-    default, shape, Color, ColorMaterial, Commands, Component, Entity, Mesh, Query, Res, ResMut, Time,
-    Transform,
+    default, Color, ColorMaterial, Commands, Component, Entity, Mesh, Query, Rectangle, Res,
+    ResMut, Time, Transform,
 };
 use bevy::sprite::MaterialMesh2dBundle;
-use bevy::utils::Uuid;
 use bevy_rapier2d::dynamics::RigidBody::Dynamic;
 use bevy_rapier2d::dynamics::{Ccd, Sleeping, Velocity};
-use bevy_rapier2d::geometry::{ActiveEvents, Collider, ColliderMassProperties, Friction, Restitution};
+use bevy_rapier2d::geometry::{
+    ActiveEvents, Collider, ColliderMassProperties, Friction, Restitution,
+};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::behaviour::collideable::Collideable;
 use crate::behaviour::expireable::Expireable;
@@ -19,7 +21,7 @@ use crate::client::error::{QuatEMA, Vec2EMA, Vec3EMA, EMA};
 use crate::constants::{
     FRICTION_COEFFICIENT, MATERIAL_SCALE, PROEJCTILE_DIMENSION_MULTIPLIER, PROJECTILE_DENSITY,
     PROJECTILE_EXPIRY_SECONDS, PROJECTILE_NETWORK_EMA_SMOOTHING_FACTOR,
-    PROJECTILE_NETWORK_UPDATE_RATE_SECONDS, RESTITUTION_COEFFICIENT, ZERO,
+    PROJECTILE_NETWORK_UPDATE_RATE_SECONDS, RESTITUTION_COEFFICIENT,
 };
 use crate::identity::game::Game;
 
@@ -47,7 +49,7 @@ pub fn spawn_projectile(
         }
     }
 
-    let mut transform = transform.clone();
+    let mut transform = transform;
 
     let mut size = Vec3::splat(MATERIAL_SCALE);
     size.y *= PROEJCTILE_DIMENSION_MULTIPLIER;
@@ -55,13 +57,12 @@ pub fn spawn_projectile(
 
     transform.scale = size;
 
-    let mesh = meshes
-        .add(Mesh::from(shape::Box::new(
-            1.0 * PROEJCTILE_DIMENSION_MULTIPLIER,
-            1.0 * PROEJCTILE_DIMENSION_MULTIPLIER,
-            ZERO,
-        )))
-        .into();
+    let rect = Rectangle::from_size(Vec2::new(
+        1.0 * PROEJCTILE_DIMENSION_MULTIPLIER,
+        1.0 * PROEJCTILE_DIMENSION_MULTIPLIER,
+    ));
+
+    let mesh = meshes.add(Mesh::from(rect)).into();
 
     let material = materials.add(ColorMaterial::from(color));
 
@@ -105,7 +106,7 @@ pub fn spawn_projectile(
     parent
         .insert(Dynamic)
         .insert(Sleeping::disabled())
-        .insert(velocity.clone());
+        .insert(velocity);
 
     if game.role == "server" {
         parent

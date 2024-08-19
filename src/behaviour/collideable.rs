@@ -1,16 +1,16 @@
 use bevy::math::{Quat, Vec3};
-use bevy::prelude::{Color, Component, EventReader, EventWriter, Query, Transform};
-use bevy::utils::Uuid;
-use bevy_rapier2d::pipeline::CollisionEvent;
+use bevy::prelude::{Color, Component, Event, EventReader, EventWriter, Query, Transform};
+use bevy_rapier2d::pipeline::CollisionEvent as RapierCollisionEvent;
 use bevy_rapier2d::prelude::Velocity;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::constants::{DEGREES_MAX, PARTICLE_LINEAR_VELOCITY, ZERO};
 use crate::identity::player::Player;
 use crate::identity::projectile::Projectile;
-use crate::types::event::{SerializableTransform, SerializableVelocity, Spawn};
+use crate::types::event::{SerializableTransform, SerializableVelocity, SpawnEvent};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Collider {
@@ -20,8 +20,8 @@ pub struct Collider {
     velocity: Option<SerializableVelocity>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Collision {
+#[derive(Event, Debug, Clone, Serialize, Deserialize)]
+pub struct CollisionEvent {
     pub collider_a: Collider,
     pub collider_b: Collider,
 }
@@ -32,7 +32,7 @@ pub struct Collideable {
 }
 
 pub fn handle_rapier_collision_event(
-    mut rapier_collision_event_reader: EventReader<CollisionEvent>,
+    mut rapier_collision_event_reader: EventReader<RapierCollisionEvent>,
     query: Query<(
         &Collideable,
         Option<&Transform>,
@@ -40,18 +40,18 @@ pub fn handle_rapier_collision_event(
         Option<&Player>,
         Option<&Projectile>,
     )>,
-    mut collision_event_writer: EventWriter<Collision>,
+    mut collision_event_writer: EventWriter<CollisionEvent>,
 ) {
-    for rapier_collision_event in rapier_collision_event_reader.iter() {
+    for rapier_collision_event in rapier_collision_event_reader.read() {
         let mut entity_a = None;
         let mut entity_b = None;
 
-        let _ = match rapier_collision_event {
-            CollisionEvent::Started(_entity_a, _entity_b, _) => {
+        match rapier_collision_event {
+            RapierCollisionEvent::Started(_entity_a, _entity_b, _) => {
                 entity_a = Some(_entity_a);
                 entity_b = Some(_entity_b);
             }
-            CollisionEvent::Stopped(_, _, _) => {}
+            RapierCollisionEvent::Stopped(_, _, _) => {}
         };
 
         if entity_a.is_none() || entity_b.is_none() {
@@ -61,8 +61,8 @@ pub fn handle_rapier_collision_event(
         let entity_a = entity_a.unwrap();
         let entity_b = entity_b.unwrap();
 
-        let result_a = query.get(entity_a.clone());
-        let result_b = query.get(entity_b.clone());
+        let result_a = query.get(*entity_a);
+        let result_b = query.get(*entity_b);
 
         if result_a.is_err() || result_b.is_err() {
             continue;
@@ -74,25 +74,25 @@ pub fn handle_rapier_collision_event(
         let mut transform_a = None;
         if _transform_a.is_some() {
             transform_a = Some(SerializableTransform::from_transform(
-                _transform_a.unwrap().clone(),
+                *_transform_a.unwrap(),
             ));
         }
 
         let mut velocity_a = None;
         if _velocity_a.is_some() {
-            velocity_a = Some(SerializableVelocity::from_velocity(_velocity_a.unwrap().clone()));
+            velocity_a = Some(SerializableVelocity::from_velocity(*_velocity_a.unwrap()));
         }
 
         let mut transform_b = None;
         if _transform_b.is_some() {
             transform_b = Some(SerializableTransform::from_transform(
-                _transform_b.unwrap().clone(),
+                *_transform_b.unwrap(),
             ));
         }
 
         let mut velocity_b = None;
         if _velocity_b.is_some() {
-            velocity_b = Some(SerializableVelocity::from_velocity(_velocity_b.unwrap().clone()));
+            velocity_b = Some(SerializableVelocity::from_velocity(*_velocity_b.unwrap()));
         }
 
         let entity_type_a;
@@ -119,7 +119,7 @@ pub fn handle_rapier_collision_event(
             );
         }
 
-        collision_event_writer.send(Collision {
+        collision_event_writer.send(CollisionEvent {
             collider_a: Collider {
                 entity_uuid: collideable_a.entity_uuid,
                 entity_type: entity_type_a.to_string(),
@@ -132,22 +132,27 @@ pub fn handle_rapier_collision_event(
                 transform: transform_b,
                 velocity: velocity_b,
             },
-        })
+        });
     }
 }
 
 pub fn handle_collision_event(
-    mut collision_event_reader: EventReader<Collision>,
-    mut spawn_event_writer: EventWriter<Spawn>,
+    mut collision_event_reader: EventReader<CollisionEvent>,
+    mut spawn_event_writer: EventWriter<SpawnEvent>,
 ) {
-    for collision in collision_event_reader.iter() {
-        let mut transform_a = collision.clone().collider_a.transform.unwrap().to_transform();
+    for collision in collision_event_reader.read() {
+        let mut transform_a = collision
+            .clone()
+            .collider_a
+            .transform
+            .unwrap()
+            .to_transform();
 
         transform_a.rotation = Quat::default();
 
         for i in 0..4 {
             transform_a.rotation =
-                Quat::from_rotation_z(f32::to_radians((DEGREES_MAX / 8 as f32) * i as f32));
+                Quat::from_rotation_z(f32::to_radians((DEGREES_MAX / 8_f32) * i as f32));
 
             let mut velocity_a = Velocity::zero();
 
@@ -156,15 +161,22 @@ pub fn handle_collision_event(
                 .mul_vec3(Vec3::new(ZERO, PARTICLE_LINEAR_VELOCITY, ZERO))
                 .truncate();
 
-            let mut color = Color::WHITE;
+            let mut color = Color::srgb(1.0, 1.0, 1.0);
 
-            if collision.collider_a.entity_type == "player" || collision.collider_b.entity_type == "player" {
-                color = *vec![Color::YELLOW, Color::ORANGE, Color::ORANGE_RED, Color::RED]
-                    .choose(&mut thread_rng())
-                    .unwrap_or_else(|| &Color::YELLOW);
+            if collision.collider_a.entity_type == "player"
+                || collision.collider_b.entity_type == "player"
+            {
+                color = *[
+                    Color::srgb(1.0, 1.0, 0.0),
+                    Color::srgb(1.0, 0.65, 0.0),
+                    Color::srgb(1.0, 0.27, 0.0),
+                    Color::srgb(1.0, 0.0, 0.0),
+                ]
+                .choose(&mut thread_rng())
+                .unwrap_or(&Color::srgb(1.0, 1.0, 0.0));
             }
 
-            spawn_event_writer.send(Spawn {
+            spawn_event_writer.send(SpawnEvent {
                 entity_uuid: Uuid::new_v4(),
                 entity_type: "particle".to_string(),
                 transform: Some(SerializableTransform::from_transform(transform_a)),

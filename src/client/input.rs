@@ -1,9 +1,10 @@
+use bevy::input::ButtonInput;
+use bevy::log::trace;
 use bevy::prelude::{
-    default, trace, BackgroundColor, Button, ButtonBundle, Changed, Commands, Component, EventReader,
-    EventWriter, Input as KeyInput, Interaction, KeyCode, PositionType, Query, Res, ResMut, Resource, Size,
-    Style, UiRect, Val, With,
+    default, BackgroundColor, Button, ButtonBundle, Changed, Commands, Component, EventReader,
+    EventWriter, Interaction, KeyCode, PositionType, Query, Res, ResMut, Resource, Style, Val,
+    With,
 };
-use bevy_debug_text_overlay::screen_print;
 
 use crate::base::helpers::serialize;
 use crate::constants::{
@@ -12,8 +13,8 @@ use crate::constants::{
 };
 use crate::identity::entity::Local;
 use crate::identity::player::Player;
-use crate::types::event::Input;
-use crate::types::network::{Container, OutgoingMessage};
+use crate::types::event::InputEvent;
+use crate::types::network::{Container, OutgoingMessageEvent};
 
 #[derive(Debug, Clone, Component)]
 pub struct ButtonRole {
@@ -37,14 +38,13 @@ pub fn spawn_button(
     commands.spawn((
         ButtonBundle {
             style: Style {
-                size: Size::new(Val::Px(UI_BUTTON_WIDTH), Val::Px(UI_BUTTON_HEIGHT)),
+                width: Val::Px(UI_BUTTON_WIDTH),
+                height: Val::Px(UI_BUTTON_HEIGHT),
                 position_type: PositionType::Absolute,
-                position: UiRect {
-                    left: Val::Px(left),
-                    right: Default::default(),
-                    top: Val::Px(top),
-                    bottom: Default::default(),
-                },
+                left: Val::Px(left),
+                right: Default::default(),
+                top: Val::Px(top),
+                bottom: Default::default(),
                 ..default()
             },
             background_color: UI_BUTTON_NORMAL.into(),
@@ -59,8 +59,8 @@ pub fn spawn_button(
 
 pub fn handle_input_from_keyboard(
     player_query: Query<&Player, With<Local>>,
-    keyboard_input: Res<KeyInput<KeyCode>>,
-    mut input_event_writer: EventWriter<Input>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut input_event_writer: EventWriter<InputEvent>,
 ) {
     let result = player_query.get_single();
     if result.is_err() {
@@ -69,7 +69,7 @@ pub fn handle_input_from_keyboard(
 
     let player = result.unwrap();
 
-    assert_eq!(player.is_local_player, true);
+    assert!(player.is_local_player);
 
     let inputs = vec![
         PLAYER_LEFT_KEY,
@@ -92,7 +92,7 @@ pub fn handle_input_from_keyboard(
     let is_backward = keyboard_input.pressed(PLAYER_BACKWARD_KEY);
     let is_firing = keyboard_input.pressed(PLAYER_FIRE_KEY);
 
-    let input = Input {
+    let input = InputEvent {
         player_uuid: player.player_uuid,
         is_left,
         is_right,
@@ -100,6 +100,15 @@ pub fn handle_input_from_keyboard(
         is_backward,
         is_firing,
     };
+
+    trace!(
+        "handle_input_from_keyboard(); left={:?}, right={:?}, forward={:?}, backward={:?}, fire={:?}",
+        input.is_left,
+        input.is_right,
+        input.is_forward,
+        input.is_backward,
+        input.is_firing
+    );
 
     input_event_writer.send(input);
 }
@@ -111,7 +120,7 @@ pub fn handle_input_from_button(
         (Changed<Interaction>, With<Button>),
     >,
     mut button_state: ResMut<ButtonState>,
-    mut input_event_writer: EventWriter<Input>,
+    mut input_event_writer: EventWriter<InputEvent>,
 ) {
     let result = player_query.get_single();
     if result.is_err() {
@@ -120,13 +129,13 @@ pub fn handle_input_from_button(
 
     let player = result.unwrap();
 
-    assert_eq!(player.is_local_player, true);
+    assert!(player.is_local_player);
 
     let mut was_input = false;
 
     for (interaction, mut color, button_role) in &mut interaction_query {
         match *interaction {
-            Interaction::Clicked => {
+            Interaction::Pressed => {
                 *color = UI_BUTTON_PRESSED.into();
 
                 if button_role.is_bottom_left {
@@ -168,7 +177,7 @@ pub fn handle_input_from_button(
     let is_backward = false;
     let is_firing = false;
 
-    let input = Input {
+    let input = InputEvent {
         player_uuid: player.player_uuid,
         is_left,
         is_right,
@@ -177,15 +186,24 @@ pub fn handle_input_from_button(
         is_firing,
     };
 
+    trace!(
+        "handle_input_from_button(); left={:?}, right={:?}, forward={:?}, backward={:?}, fire={:?}",
+        input.is_left,
+        input.is_right,
+        input.is_forward,
+        input.is_backward,
+        input.is_firing
+    );
+
     input_event_writer.send(input);
 }
 
 pub fn handle_input_event(
-    mut input_event_reader: EventReader<Input>,
-    mut outgoing_message_event_writer: EventWriter<OutgoingMessage>,
+    mut input_event_reader: EventReader<InputEvent>,
+    mut outgoing_message_event_writer: EventWriter<OutgoingMessageEvent>,
 ) {
-    for input in input_event_reader.iter() {
-        let outgoing_message = OutgoingMessage {
+    for input in input_event_reader.read() {
+        let outgoing_message = OutgoingMessageEvent {
             session_uuid: None,
             not_session_uuid: None,
             message: serialize(Container {
@@ -202,8 +220,8 @@ pub fn handle_input_event(
 
         outgoing_message_event_writer.send(outgoing_message);
 
-        screen_print!(
-            "left={:?}, right={:?}, forward={:?}, backward={:?}, fire={:?}",
+        trace!(
+            "handle_input_event(); left={:?}, right={:?}, forward={:?}, backward={:?}, fire={:?}",
             input.is_left,
             input.is_right,
             input.is_forward,

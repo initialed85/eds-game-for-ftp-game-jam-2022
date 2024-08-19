@@ -1,22 +1,22 @@
 use bevy::prelude::{EventReader, EventWriter};
 
 use crate::base::helpers::serialize;
-use crate::types::event::{Despawn, Leave};
-use crate::types::network::{Container, OutgoingMessage};
+use crate::types::event::{DespawnEvent, LeaveEvent};
+use crate::types::network::{Container, OutgoingMessageEvent};
 
 pub fn handle_leave_event(
-    mut leave_event_reader: EventReader<Leave>,
-    mut outgoing_message_event_writer: EventWriter<OutgoingMessage>,
-    mut despawn_event_writer: EventWriter<Despawn>,
+    mut leave_event_reader: EventReader<LeaveEvent>,
+    mut outgoing_message_event_writer: EventWriter<OutgoingMessageEvent>,
+    mut despawn_event_writer: EventWriter<DespawnEvent>,
 ) {
-    for leave_event in leave_event_reader.iter() {
-        despawn_event_writer.send(Despawn {
+    for leave_event in leave_event_reader.read() {
+        despawn_event_writer.send(DespawnEvent {
             entity_uuid: leave_event.player_uuid,
             entity_type: "player".to_string(),
         });
 
         // tell everyone the player has left
-        outgoing_message_event_writer.send(OutgoingMessage {
+        outgoing_message_event_writer.send(OutgoingMessageEvent {
             session_uuid: None,
             not_session_uuid: None,
             message: serialize(Container {

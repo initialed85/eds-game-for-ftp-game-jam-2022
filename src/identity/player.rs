@@ -2,16 +2,18 @@ use bevy::asset::Assets;
 use bevy::ecs::system::EntityCommands;
 use bevy::math::Vec3;
 use bevy::prelude::{
-    default, shape, Color, ColorMaterial, Commands, Component, Entity, Mesh, Query, Res, ResMut, Time,
-    Transform,
+    default, Color, ColorMaterial, Commands, Component, Entity, Mesh, Query, RegularPolygon, Res,
+    ResMut, Time, Transform,
 };
 use bevy::sprite::MaterialMesh2dBundle;
-use bevy::utils::Uuid;
 use bevy_rapier2d::dynamics::RigidBody::Dynamic;
 use bevy_rapier2d::dynamics::{Ccd, Damping, Sleeping};
-use bevy_rapier2d::geometry::{ActiveEvents, Collider, ColliderMassProperties, Friction, Restitution};
+use bevy_rapier2d::geometry::{
+    ActiveEvents, Collider, ColliderMassProperties, Friction, Restitution,
+};
 use bevy_rapier2d::prelude::Velocity;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::behaviour::collideable::Collideable;
 use crate::behaviour::moveable::Moveable;
@@ -19,21 +21,21 @@ use crate::behaviour::weaponized::Weaponized;
 use crate::client::error::{QuatEMA, Vec2EMA, Vec3EMA, EMA};
 use crate::constants::{
     FRICTION_COEFFICIENT, MATERIAL_SCALE, PLAYER_ANGULAR_DAMPING, PLAYER_COLLIDER_BALL_RADIUS,
-    PLAYER_DENSITY, PLAYER_HEIGHT_MULTIPLIER, PLAYER_LINEAR_DAMPING, PLAYER_NETWORK_EMA_SMOOTHING_FACTOR,
-    PLAYER_NETWORK_UPDATE_RATE_SECONDS, PLAYER_POLYGON_RADIUS, PLAYER_POLYGON_SIDES, PLAYER_WIDTH_MULTIPLIER,
-    RESTITUTION_COEFFICIENT,
+    PLAYER_DENSITY, PLAYER_HEIGHT_MULTIPLIER, PLAYER_LINEAR_DAMPING,
+    PLAYER_NETWORK_EMA_SMOOTHING_FACTOR, PLAYER_NETWORK_UPDATE_RATE_SECONDS, PLAYER_POLYGON_RADIUS,
+    PLAYER_POLYGON_SIDES, PLAYER_WIDTH_MULTIPLIER, RESTITUTION_COEFFICIENT,
 };
 use crate::identity::entity::{Local, Remote};
 use crate::identity::game::Game;
-use crate::types::event::Input;
+use crate::types::event::InputEvent;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Component)]
 pub struct Player {
     pub player_uuid: Uuid,
     pub color: Color,
     pub is_local_player: bool,
-    pub unhandled_inputs: Vec<Input>,
-    pub last_input: Option<Input>,
+    pub unhandled_inputs: Vec<InputEvent>,
+    pub last_input: Option<InputEvent>,
 }
 
 pub fn spawn_player(
@@ -54,7 +56,7 @@ pub fn spawn_player(
         }
     }
 
-    let mut transform = transform.clone();
+    let mut transform = transform;
 
     let mut size = Vec3::splat(MATERIAL_SCALE);
     size.y *= PLAYER_HEIGHT_MULTIPLIER;
@@ -63,7 +65,7 @@ pub fn spawn_player(
     transform.scale = size;
 
     let mesh = meshes
-        .add(Mesh::from(shape::RegularPolygon::new(
+        .add(Mesh::from(RegularPolygon::new(
             PLAYER_POLYGON_RADIUS,
             PLAYER_POLYGON_SIDES,
         )))
@@ -78,7 +80,8 @@ pub fn spawn_player(
         ..default()
     };
 
-    let is_local_player = game.local_player_uuid.is_some() && player_uuid == game.local_player_uuid.unwrap();
+    let is_local_player =
+        game.local_player_uuid.is_some() && player_uuid == game.local_player_uuid.unwrap();
 
     let player = Player {
         player_uuid,
@@ -128,7 +131,7 @@ pub fn spawn_player(
     parent
         .insert(Dynamic)
         .insert(Sleeping::disabled())
-        .insert(velocity.clone())
+        .insert(velocity)
         .insert(Damping {
             linear_damping: PLAYER_LINEAR_DAMPING,
             angular_damping: PLAYER_ANGULAR_DAMPING,

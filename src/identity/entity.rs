@@ -6,7 +6,7 @@ use crate::identity::game::Game;
 use crate::identity::particle::{despawn_particle, spawn_particle, Particle};
 use crate::identity::player::{despawn_player, spawn_player, Player};
 use crate::identity::projectile::{despawn_projectile, spawn_projectile, Projectile};
-use crate::types::event::{Despawn, Spawn};
+use crate::types::event::{DespawnEvent, SpawnEvent};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Component)]
 pub struct Local {}
@@ -15,7 +15,7 @@ pub struct Local {}
 pub struct Remote {}
 
 pub fn spawn_entity(
-    spawn: Spawn,
+    spawn: SpawnEvent,
     game: &Res<Game>,
     player_query: &Query<&Player>,
     projectile_query: &Query<&Projectile>,
@@ -33,7 +33,7 @@ pub fn spawn_entity(
             spawn.color.unwrap(),
             spawn.transform.unwrap().to_transform(),
             spawn.velocity.unwrap().to_velocity(),
-            time.clone(),
+            time,
             meshes,
             materials,
             commands,
@@ -46,7 +46,7 @@ pub fn spawn_entity(
             spawn.color.unwrap(),
             spawn.transform.unwrap().to_transform(),
             spawn.velocity.unwrap().to_velocity(),
-            time.clone(),
+            time,
             meshes,
             materials,
             commands,
@@ -59,7 +59,7 @@ pub fn spawn_entity(
             spawn.color.unwrap(),
             spawn.transform.unwrap().to_transform(),
             spawn.velocity.unwrap().to_velocity(),
-            time.clone(),
+            time,
             meshes,
             materials,
             commands,
@@ -73,7 +73,7 @@ pub fn spawn_entity(
 }
 
 pub fn despawn_entity(
-    despawn: Despawn,
+    despawn: DespawnEvent,
     player_query: &Query<(Entity, &Player)>,
     projectile_query: &Query<(Entity, &Projectile)>,
     particle_query: &Query<(Entity, &Particle)>,

@@ -22,40 +22,40 @@ What is it? Not sure yet- looks like it's gonna be a bit like a multiplayer Aste
 ### Roles
 
 - Server
-    - Runs an x86-built app in a Docker container
-    - Uses `xvfb` to make Bevy okay with not having a display
-    - Essentially runs the simulation (handles all the physics etc)
-    - Consumes inputs from Clients at published rate
-    - Publishes updates to Clients at ? Hz via WebSocket
+  - Runs an x86-built app in a Docker container
+  - Uses `xvfb` to make Bevy okay with not having a display
+  - Essentially runs the simulation (handles all the physics etc)
+  - Consumes inputs from Clients at published rate
+  - Publishes updates to Clients at ? Hz via WebSocket
 - Client
-    - Runs a WASM-built app in a web page
-    - Publishes inputs to Server at ? Hz via WebSocket
-    - Consumes updates from Server at published rate
-    - Sets absolute transform, rotation and velocity of players on each update
-    - Runs it's own physics simulation in between updates to provide convincing interpolation
+  - Runs a WASM-built app in a web page
+  - Publishes inputs to Server at ? Hz via WebSocket
+  - Consumes updates from Server at published rate
+  - Sets absolute transform, rotation and velocity of players on each update
+  - Runs it's own physics simulation in between updates to provide convincing interpolation
 
 ### Deployment
 
 - `xvfb` container
-    - Just provides a garbage bin to throw rendered frames into
+  - Just provides a garbage bin to throw rendered frames into
 - `server` container
-    - Builds the x86 app and runs it, listening for WebSocket traffic on port 8080
+  - Builds the x86 app and runs it, listening for WebSocket traffic on port 8080
 - `client` container
-    - Builds the WASM app, briefly runs it using `wasm-server-runner` so it can extract the static content
-    - Serves up the static content using Nginx
+  - Builds the WASM app, briefly runs it using `wasm-server-runner` so it can extract the static content
+  - Serves up the static content using Nginx
 - `proxy` container
-    - Provides a single presence for the static content from the client and WebSocket in the server
+  - Provides a single presence for the static content from the client and WebSocket in the server
 
 ### TODO
 
 Things I need to do:
 
 - Reduce the network overhead
-    - Send smaller messages / no messages when there are no changes
-    - Don't send messages as frequently?
+  - Send smaller messages / no messages when there are no changes
+  - Don't send messages as frequently?
 - Reduce the CPU overhead on the server
-    - I think it's because I'm naively servicing the WebSocket at 60Hz when I could probably let it buffer for
-      a bit longer
+  - I think it's because I'm naively servicing the WebSocket at 60Hz when I could probably let it buffer for
+    a bit longer
 
 Things I want to do:
 
@@ -103,12 +103,15 @@ I have a process that's something like this:
 So the commands up being something like:
 
 ```shell
-# in shell 1
-cargo build --target x86_64-apple-darwin --bin server --features server && target/x86_64-apple-darwin/debug/server
+# shell 1
+cd proxy && ./build.sh && PROXY_PORT=80 ./deploy.sh ; cd ..
 
-# in shell 2
-export WASM_SERVER_RUNNER_ADDRESS=0.0.0.0; cargo build --target wasm32-unknown-unknown --bin client --features client && wasm-server-runner target/wasm32-unknown-unknown/debug/client.wasm
+# shell 2
+devserver --address 0.0.0.0:1334
 
-# in shell 3
-cd proxy && ./build.sh && PROXY_PORT=80 ./deploy.sh
+# shell 3
+find . -type f -name '*.rs' | entr -n -r -cc -s "cargo build --target aarch64-appldarwin --bin server --features server && target/aarch64-apple-darwin/debug/server"
+
+# shell 4
+find target/aarch64-apple-darwin/debug/server | entr -n -r -cc -s "cargo build --tget wasm32-unknown-unknown --bin client --features client && wasm-bindgen --no-typescript --target web --out-dir ./out/ --out-name "client" ./target/wasm32-unknown-unknown/debug/client.wasm"
 ```

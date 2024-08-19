@@ -1,14 +1,14 @@
 use bevy::prelude::{EventReader, EventWriter};
 
 use crate::base::helpers::serialize;
-use crate::types::event::Spawn;
-use crate::types::network::{Container, OutgoingMessage};
+use crate::types::event::SpawnEvent;
+use crate::types::network::{Container, OutgoingMessageEvent};
 
 pub fn handle_spawn_event(
-    mut spawn_event_reader: EventReader<Spawn>,
-    mut outgoing_message_event_writer: EventWriter<OutgoingMessage>,
+    mut spawn_event_reader: EventReader<SpawnEvent>,
+    mut outgoing_message_event_writer: EventWriter<OutgoingMessageEvent>,
 ) {
-    for spawn_event in spawn_event_reader.iter() {
+    for spawn_event in spawn_event_reader.read() {
         let message = serialize(Container {
             message_type: "spawn".to_string(),
             join: None,
@@ -21,7 +21,7 @@ pub fn handle_spawn_event(
         });
 
         // tell everyone to spawn the entity
-        outgoing_message_event_writer.send(OutgoingMessage {
+        outgoing_message_event_writer.send(OutgoingMessageEvent {
             session_uuid: None,
             not_session_uuid: None,
             message: message.clone(),

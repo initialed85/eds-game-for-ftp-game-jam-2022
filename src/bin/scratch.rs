@@ -1,8 +1,8 @@
+use bevy::app::{Startup, Update};
 use bevy::log::trace;
 use bevy::prelude::{
-    default, BackgroundColor, BuildChildren, Button, ButtonBundle, Changed, Children, Color, Commands,
-    Component, Interaction, PositionType, Query, Res, ResMut, Size, Style, Text, TextBundle, TextStyle,
-    UiRect, Val, With,
+    default, BackgroundColor, Button, ButtonBundle, Changed, Color, Commands, Component,
+    Interaction, PositionType, Query, ResMut, Style, Val, With,
 };
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -13,9 +13,9 @@ use eds_game_for_ftp_game_jam_2022::constants::{
 };
 use eds_game_for_ftp_game_jam_2022::identity::game::Game;
 
-const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
-const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
+const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
+const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 #[derive(Debug, Clone, Component)]
 pub struct ButtonRole {
@@ -33,14 +33,13 @@ pub fn spawn_button(
     commands.spawn((
         ButtonBundle {
             style: Style {
-                size: Size::new(Val::Px(UI_BUTTON_WIDTH), Val::Px(UI_BUTTON_HEIGHT)),
+                width: Val::Px(UI_BUTTON_WIDTH),
+                height: Val::Px(UI_BUTTON_HEIGHT),
                 position_type: PositionType::Absolute,
-                position: UiRect {
-                    left: Val::Px(left),
-                    right: Default::default(),
-                    top: Val::Px(top),
-                    bottom: Default::default(),
-                },
+                left: Val::Px(left),
+                right: Default::default(),
+                top: Val::Px(top),
+                bottom: Default::default(),
                 ..default()
             },
             background_color: NORMAL_BUTTON.into(),
@@ -73,6 +72,7 @@ fn handle_setup(mut game: ResMut<Game>, mut commands: Commands) {
     );
 }
 
+#[warn(clippy::type_complexity)]
 fn handle_button(
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor, &ButtonRole),
@@ -83,7 +83,7 @@ fn handle_button(
 
     for (interaction, mut color, button_role) in &mut interaction_query {
         match *interaction {
-            Interaction::Clicked => {
+            Interaction::Pressed => {
                 *color = PRESSED_BUTTON.into();
                 trace!("click; button_role={:?}", button_role);
             }
@@ -106,8 +106,8 @@ pub fn run() {
 
     let mut app = get_base_app();
 
-    app.add_startup_system(handle_setup);
-    app.add_system(handle_button);
+    app.add_systems(Startup, handle_setup);
+    app.add_systems(Update, handle_button);
 
     app.run();
 }

@@ -1,11 +1,11 @@
 use bevy::prelude::{Component, Entity, EventWriter, Query, Res, Time};
-use bevy::utils::Uuid;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::identity::particle::Particle;
 use crate::identity::player::Player;
 use crate::identity::projectile::Projectile;
-use crate::types::event::Despawn;
+use crate::types::event::DespawnEvent;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Component)]
 pub struct Expireable {
@@ -22,7 +22,7 @@ pub fn handle_expireable(
         Option<&Projectile>,
         Option<&Particle>,
     )>,
-    mut despawn_event_writer: EventWriter<Despawn>,
+    mut despawn_event_writer: EventWriter<DespawnEvent>,
 ) {
     for (entity, expireable, player, projectile, particle) in expireable_query.iter_mut() {
         if time.elapsed_seconds_f64() < expireable.expires_at {
@@ -44,7 +44,7 @@ pub fn handle_expireable(
             );
         }
 
-        despawn_event_writer.send(Despawn {
+        despawn_event_writer.send(DespawnEvent {
             entity_uuid: expireable.entity_uuid,
             entity_type: entity_type.to_string(),
         });

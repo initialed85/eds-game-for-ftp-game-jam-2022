@@ -2,28 +2,34 @@
 
 set -e -m
 
-docker build --progress plain --platform=linux/amd64 \
-  -t kube-registry:5000/eds-game-for-ftp-game-jam-2022-xvfb:latest \
-  -f xvfb/Dockerfile \
-  . &
-docker build --progress plain --platform=linux/amd64 \
-  -t kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest \
-  -f server/Dockerfile \
-  . &
-docker build --progress plain --platform=linux/amd64 \
-  -t kube-registry:5000/eds-game-for-ftp-game-jam-2022-client:latest \
-  -f client/Dockerfile \
-  . &
-docker build --progress plain --platform=linux/amd64 \
-  -t kube-registry:5000/eds-game-for-ftp-game-jam-2022-proxy:latest \
-  -f proxy/Dockerfile \
-  . &
+if [[ "${1}" == "xvfb" ]] || [[ "${1}" == "" ]]; then
+  docker build --progress plain --platform=linux/amd64 \
+    -t kube-registry:5000/eds-game-for-ftp-game-jam-2022-xvfb:latest \
+    -f xvfb/Dockerfile \
+    .
+  docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-xvfb:latest
+fi
 
-wait
+if [[ "${1}" == "server" ]] || [[ "${1}" == "" ]]; then
+  docker build --progress plain --platform=linux/amd64 \
+    -t kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest \
+    -f server/Dockerfile \
+    .
+  docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest
+fi
 
-docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-xvfb:latest &
-docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-server:latest &
-docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-client:latest &
-docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-proxy:latest &
+if [[ "${1}" == "client" ]] || [[ "${1}" == "" ]]; then
+  docker build --progress plain --platform=linux/amd64 \
+    -t kube-registry:5000/eds-game-for-ftp-game-jam-2022-client:latest \
+    -f client/Dockerfile \
+    .
+  docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-client:latest
+fi
 
-wait
+if [[ "${1}" == "proxy" ]] || [[ "${1}" == "" ]]; then
+  docker build --progress plain --platform=linux/amd64 \
+    -t kube-registry:5000/eds-game-for-ftp-game-jam-2022-proxy:latest \
+    -f proxy/Dockerfile \
+    .
+  docker push kube-registry:5000/eds-game-for-ftp-game-jam-2022-proxy:latest
+fi

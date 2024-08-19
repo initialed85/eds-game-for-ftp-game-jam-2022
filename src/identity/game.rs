@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use bevy::prelude::Resource;
-use bevy::utils::Uuid;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Resource)]
 pub struct Game {

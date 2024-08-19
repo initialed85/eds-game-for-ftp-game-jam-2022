@@ -1,4 +1,4 @@
-FROM rust:1.73.0-slim-bullseye AS base
+FROM --platform=linux/arm64 rust:1.80.1-slim-bullseye AS base
 
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo install wasm-server-runner

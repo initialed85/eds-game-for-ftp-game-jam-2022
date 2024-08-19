@@ -1,27 +1,29 @@
 use bevy::prelude::{EventReader, EventWriter};
 
 use crate::base::helpers::deserialize;
-use crate::behaviour::collideable::Collision;
-use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
-use crate::types::network::{Close, Container, IncomingMessage, Open};
+use crate::behaviour::collideable::CollisionEvent;
+use crate::types::event::{
+    DespawnEvent, InputEvent, JoinEvent, LeaveEvent, SpawnEvent, UpdateEvent,
+};
+use crate::types::network::{CloseEvent, Container, IncomingMessageEvent, OpenEvent};
 
-pub fn base_handle_open_event(mut open_event_reader: EventReader<Open>) {
-    for open_event in open_event_reader.iter() {
+pub fn base_handle_open_event(mut open_event_reader: EventReader<OpenEvent>) {
+    for open_event in open_event_reader.read() {
         let _ = open_event;
     }
 }
 
 pub fn base_handle_incoming_message_event(
-    mut incoming_message_event_reader: EventReader<IncomingMessage>,
-    mut join_event_writer: EventWriter<Join>,
-    mut spawn_event_writer: EventWriter<Spawn>,
-    mut input_event_writer: EventWriter<Input>,
-    mut update_event_writer: EventWriter<Update>,
-    mut leave_event_writer: EventWriter<Leave>,
-    mut despawn_event_writer: EventWriter<Despawn>,
-    mut collision_event_writer: EventWriter<Collision>,
+    mut incoming_message_event_reader: EventReader<IncomingMessageEvent>,
+    mut join_event_writer: EventWriter<JoinEvent>,
+    mut spawn_event_writer: EventWriter<SpawnEvent>,
+    mut input_event_writer: EventWriter<InputEvent>,
+    mut update_event_writer: EventWriter<UpdateEvent>,
+    mut leave_event_writer: EventWriter<LeaveEvent>,
+    mut despawn_event_writer: EventWriter<DespawnEvent>,
+    mut collision_event_writer: EventWriter<CollisionEvent>,
 ) {
-    for incoming_message_event in incoming_message_event_reader.iter() {
+    for incoming_message_event in incoming_message_event_reader.read() {
         let container = deserialize::<Container>(incoming_message_event.message.clone());
 
         if container.message_type == "join" {
@@ -42,8 +44,8 @@ pub fn base_handle_incoming_message_event(
     }
 }
 
-pub fn base_handle_close_event(mut close_event_reader: EventReader<Close>) {
-    for close_event in close_event_reader.iter() {
+pub fn base_handle_close_event(mut close_event_reader: EventReader<CloseEvent>) {
+    for close_event in close_event_reader.read() {
         let _ = close_event;
     }
 }

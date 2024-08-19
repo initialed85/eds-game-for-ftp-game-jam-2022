@@ -1,33 +1,36 @@
-use bevy::utils::Uuid;
+use bevy::prelude::Event;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-use crate::behaviour::collideable::Collision;
-use crate::types::event::{Despawn, Input, Join, Leave, Spawn, Update};
+use crate::behaviour::collideable::CollisionEvent;
+use crate::types::event::{
+    DespawnEvent, InputEvent, JoinEvent, LeaveEvent, SpawnEvent, UpdateEvent,
+};
 
 //
 // For the WebSocket layer
 //
 
-#[derive(Debug, Clone)]
-pub struct Open {
+#[derive(Event, Debug, Clone)]
+pub struct OpenEvent {
     pub session_uuid: Uuid,
 }
 
-#[derive(Debug, Clone)]
-pub struct IncomingMessage {
+#[derive(Event, Debug, Clone)]
+pub struct IncomingMessageEvent {
     pub session_uuid: Uuid,
     pub message: Vec<u8>,
 }
 
-#[derive(Debug, Clone)]
-pub struct OutgoingMessage {
+#[derive(Event, Debug, Clone)]
+pub struct OutgoingMessageEvent {
     pub session_uuid: Option<Uuid>,
     pub not_session_uuid: Option<Uuid>,
     pub message: Vec<u8>, // a serialized Container
 }
 
-#[derive(Debug, Clone)]
-pub struct Close {
+#[derive(Event, Debug, Clone)]
+pub struct CloseEvent {
     pub session_uuid: Uuid,
 }
 
@@ -39,11 +42,11 @@ pub struct Close {
 pub struct Container {
     pub message_type: String,
     // one of "join", "spawn", "input", "update", "despawn", "leave", "collision"
-    pub join: Option<Join>,
-    pub spawn: Option<Spawn>,
-    pub input: Option<Input>,
-    pub update: Option<Update>,
-    pub despawn: Option<Despawn>,
-    pub leave: Option<Leave>,
-    pub collision: Option<Collision>,
+    pub join: Option<JoinEvent>,
+    pub spawn: Option<SpawnEvent>,
+    pub input: Option<InputEvent>,
+    pub update: Option<UpdateEvent>,
+    pub despawn: Option<DespawnEvent>,
+    pub leave: Option<LeaveEvent>,
+    pub collision: Option<CollisionEvent>,
 }
