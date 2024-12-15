@@ -25,10 +25,13 @@ impl EMA {
 
         let this_measurement_at = time.elapsed_seconds_f64();
 
-        // credit to bevy_diagnostic-0.9.1/src/diagnostic.rs
-        let delta = this_measurement_at - self.last_measurement_at;
-        let alpha = (delta / self.smoothing_factor).clamp(0.0, 1.0);
-        self.value += alpha * (value - self.value);
+        // TODO: disabled, just pass-through for now
+        // // credit to bevy_diagnostic-0.9.1/src/diagnostic.rs
+        // let delta = this_measurement_at - self.last_measurement_at;
+        // let alpha = (delta / self.smoothing_factor).clamp(0.0, 1.0);
+        // self.value += alpha * (value - self.value);
+
+        self.value = value;
 
         self.last_measurement_at = this_measurement_at;
     }

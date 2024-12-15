@@ -113,5 +113,5 @@ devserver --address 0.0.0.0:1334
 find . -type f -name '*.rs' | entr -n -r -cc -s "cargo build --target aarch64-appldarwin --bin server --features server && target/aarch64-apple-darwin/debug/server"
 
 # shell 4
-find target/aarch64-apple-darwin/debug/server | entr -n -r -cc -s "cargo build --tget wasm32-unknown-unknown --bin client --features client && wasm-bindgen --no-typescript --target web --out-dir ./out/ --out-name "client" ./target/wasm32-unknown-unknown/debug/client.wasm"
+find target/aarch64-apple-darwin/debug/server | entr -n -r -cc -s "cargo build --target wasm32-unknown-unknown --bin client --features client && wasm-bindgen --no-typescript --target web --out-dir ./out/ --out-name "client" ./target/wasm32-unknown-unknown/debug/client.wasm"
 ```
