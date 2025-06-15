@@ -110,7 +110,7 @@ cd proxy && ./build.sh && PROXY_PORT=80 ./deploy.sh ; cd ..
 devserver --address 0.0.0.0:1334
 
 # shell 3
-find . -type f -name '*.rs' | entr -n -r -cc -s "cargo build --target aarch64-appldarwin --bin server --features server && target/aarch64-apple-darwin/debug/server"
+find . -type f -name '*.rs' | entr -n -r -cc -s "cargo build --target aarch64-apple-darwin --bin server --features server && target/aarch64-apple-darwin/debug/server"
 
 # shell 4
 find target/aarch64-apple-darwin/debug/server | entr -n -r -cc -s "cargo build --target wasm32-unknown-unknown --bin client --features client && wasm-bindgen --no-typescript --target web --out-dir ./out/ --out-name "client" ./target/wasm32-unknown-unknown/debug/client.wasm"

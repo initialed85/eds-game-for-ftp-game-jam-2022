@@ -13,7 +13,7 @@ pub const RADIANS_TO_DEGREES: f32 = 180.0 / PI;
 pub const TITLE: &str = "eds-game-for-ftp-game-jam-2022";
 pub const BOUNDS: Vec2 = Vec2::new(891.0, 445.0);
 pub const PIXELS_PER_METER: f32 = 1.0;
-pub const BASE_TIME_STEP: f64 = 1.0 / 60.0;
+pub const BASE_TIME_STEP: f64 = 1.0 / 30.0;
 pub const BASE_TIME_STEP_NAME: &str = "base_time_step";
 pub const BACKGROUND_COLOR: Color = Color::srgb(0.41, 0.41, 0.41);
 
@@ -41,9 +41,9 @@ pub const PLAYER_LEFT_KEY: KeyCode = KeyCode::ArrowLeft;
 pub const PLAYER_RIGHT_KEY: KeyCode = KeyCode::ArrowRight;
 pub const PLAYER_FIRE_KEY: KeyCode = KeyCode::AltLeft;
 pub const PLAYER_ANGULAR_VELOCITY_MAX: f32 = 10.0 / 3.0;
-pub const PLAYER_ANGULAR_VELOCITY_STEP: f32 = 1.0 / 3.0;
+pub const PLAYER_ANGULAR_VELOCITY_STEP: f32 = 1.0 / 2.0;
 pub const PLAYER_LINEAR_VELOCITY_MAX: f32 = (10.0 / 3.0) * 2.0;
-pub const PLAYER_NETWORK_UPDATE_RATE_SECONDS: f64 = 1.0 / 30.0;
+pub const PLAYER_NETWORK_UPDATE_RATE_SECONDS: f64 = 1.0 / 15.0;
 pub const PLAYER_NETWORK_EMA_SMOOTHING_FACTOR: f64 = 0.99;
 
 // weapon
@@ -52,7 +52,7 @@ pub const PROJECTILE_LINEAR_VELOCITY: f32 = (1000.0 / 3.0) * 2.0;
 pub const PROEJCTILE_DIMENSION_MULTIPLIER: f32 = 1.0 / 3.5;
 pub const PROJECTILE_DENSITY: f32 = 50.0;
 pub const PROJECTILE_EXPIRY_SECONDS: f64 = 2.5;
-pub const PROJECTILE_NETWORK_UPDATE_RATE_SECONDS: f64 = 1.0 / 30.0;
+pub const PROJECTILE_NETWORK_UPDATE_RATE_SECONDS: f64 = 1.0 / 15.0;
 pub const PROJECTILE_NETWORK_EMA_SMOOTHING_FACTOR: f64 = 0.95;
 
 // particles
