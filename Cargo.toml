@@ -23,7 +23,7 @@ rmp-serde = "1.1.1"
 serde = "1.0.148"
 serde_json = "1.0.89"
 tungstenite = "0.18.0"
-uuid = "1.10.0"
+uuid = { version = "1.0", features = ["v5"] }
 wasm-bindgen = "0.2.93"
 
 [features]
@@ -64,6 +64,7 @@ rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y"]
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"
+rustflags = ["--cfg=wasm_js"]
 
 [target.x86_64-unknown-linux-gnu]
 linker = "clang"

@@ -67,7 +67,7 @@ impl WebSocketServer {
                 return;
             }
 
-            let session_uuid = Uuid::new_v4();
+            let session_uuid = Uuid::new_v5();
             let web_socket = web_socket.unwrap();
             self.web_socket_by_session_uuid
                 .insert(session_uuid, web_socket);

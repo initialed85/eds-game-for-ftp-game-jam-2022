@@ -177,7 +177,7 @@ pub fn handle_collision_event(
             }
 
             spawn_event_writer.send(SpawnEvent {
-                entity_uuid: Uuid::new_v4(),
+                entity_uuid: Uuid::new_v5(),
                 entity_type: "particle".to_string(),
                 transform: Some(SerializableTransform::from_transform(transform_a)),
                 velocity: Some(SerializableVelocity::from_velocity(velocity_a)),

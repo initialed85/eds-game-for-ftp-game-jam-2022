@@ -114,7 +114,7 @@ pub fn spawn_player(
         parent = commands.spawn((material_mesh, player, moveable, collideable, Local {}));
     } else {
         let weaponized = Weaponized {
-            weapon_uuid: Uuid::new_v4(),
+            weapon_uuid: Uuid::new_v5(),
             last_fired_at: 0.0,
         };
 
